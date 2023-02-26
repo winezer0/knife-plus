@@ -1,6 +1,6 @@
 # 更新记录(本分支)
 
-#####  knife v 2.1.5
+#####  knife 2.1.5
 
 ```
 在Auto_Load_Project_Config为True的情况下,
@@ -11,7 +11,14 @@
 在 Add_Hosyts_Exclude_Scope为True的情况下,支持配置默认加入排除scope的域名变量.（每次插件启动时会加载）
 ```
 
-#####  knife v 2.1.4
+
+
+knife v2.1.5版本以前修改版本下载请访问:
+https://github.com/winezer0/knife/releases
+
+
+
+#####  knife 2.1.4
 
 ```
 在Auto_Load_Project_Config为True的情况下,
@@ -35,11 +42,10 @@
 后续可能添加功能，右键自动将域名加入scope黑名单（通过编辑和重新加载配置文件的方式）
 注意：直接使用的add scope功能是添加url到scope普通模式，不支持正则功能。
 
-v2.1.4版本以前源码下载请访问
-https://github.com/winezer0/knife/releases
+
 ```
 
-#####  knife v 2.1.3
+#####  knife 2.1.3
 
 ```
 新增Knife基本变量Coding_Set_From|Coding_Set_Using，
@@ -55,10 +61,9 @@ String codingSetUsing = burp.tableModel.getConfigValueByKey("Coding_Set_Using");
 
 修复系统编码变量覆盖问题
 
-v2.1.4版本以前源码下载请访问https://github.com/winezer0/knife/releases
 ```
 
-#####  knife v 2.1.2
+#####  knife 2.1.2
 
 ```
 进一步优化UI编码显示问题
@@ -70,10 +75,9 @@ java启动编码指定gbk.则burp默认编码为gbk。
 当此时指定utf-8作为ui显示编码时，自动解码结果会出乱码，
 可以通过在Display_Coding指定编码为utf-8,并设置为true，修复该问题，
 
-v2.1.4版本以前源码下载请访问https://github.com/winezer0/knife/releases
 ```
 
-#####  knife v 2.1.1
+#####  knife 2.1.1
 
 ```
 修复2.1的unicode解码问题
@@ -82,7 +86,7 @@ v2.1.4版本以前源码下载请访问https://github.com/winezer0/knife/release
 
 注意,先设置burpsute显示编码为defaul
 
-v2.1.4版本以前源码下载请访问https://github.com/winezer0/knife/releases
 ```
 
 ##### 
+
