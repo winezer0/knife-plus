@@ -40,7 +40,11 @@ https://github.com/bit4woo/knife
 支持通过配置添加scopeexclude域名 (正则)
 ```
 
-更多高级使用请查看功能更新记录  README.Update.md
+本分支更多使用细节请查看 README.Update.md
+
+
+
+原始项目基本使用方案请访问：https://github.com/bit4woo/knife
 
 
 
