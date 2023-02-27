@@ -1,4 +1,19 @@
 # 更新记录(本分支)
+#####  knife 2.1.6
+
+```
+增加 Auto_Save_Config_After_Update_Scope 变量。
+当 变量值为false时，不会将高级按键操作 
+(Add Host To ExScope Adv、 
+Add Host To Scope Adv、
+Clear All Scope Adv ）和
+启动追加操作
+（add Default Exclude Hosts）
+的行为 操作过后的Json配置 保存到config文件，
+仅在内存中修改。
+
+上一版本对于这些操作默认是会写入config配置文件.
+```
 
 #####  knife 2.1.5
 
