@@ -1,4 +1,19 @@
 # 更新记录(本分支)
+**knife 2.1.7**
+
+```
+1、增加 Scope_Set_Base_On_Wildcard_SubDomain 变量。
+开启该开关时(为true开启)，右键设置InScope Adv 或 ExScope Adv将会把Host改为子域名通配符模式
+如：www.baidu.com -> .*\\.baidu\\.com
+
+2、优化添加到Scope的HOST，.号将自动转义，更精确的匹配
+如：www.baidu.com -> www\\.baidu\\.com
+
+3、规范右键命名和文件命名
+```
+
+
+
 #####  knife 2.1.6
 
 ```
