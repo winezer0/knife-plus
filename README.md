@@ -36,8 +36,8 @@ https://github.com/bit4woo/knife
 支持右键增加scope exclude域名 (正则)
 支持右键清空scope 所有范围
 
-在 Add_Hosyts_Exclude_Scope为True的情况下:
-支持通过配置添加scopeexclude域名 (正则)
+在 Add_Hosts_Exclude_Scope为True的情况下:
+支持通过配置添加scope exclude域名 (正则)
 ```
 
 本分支更多使用细节请查看 README.Update.md
