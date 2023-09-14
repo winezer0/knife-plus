@@ -40,7 +40,7 @@ public class ChineseTab implements IMessageEditorTab{
 	private JButton btnNewButton;
 
 	private byte[] originContent;
-	private byte[] handledOriginalContent = "Nothing to show".getBytes();
+
 
 	private List<String> allPossibleCharset1; //环境编码列表
 	private List<String> allPossibleCharset2; //转换编码列表
@@ -99,7 +99,7 @@ public class ChineseTab implements IMessageEditorTab{
 
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				display();
+				switch_display_and_format();
 				if ((charSetIndex2 + 1) % allPossibleCharset1.size() == 0){ getNextCharSet1();}
 				getNextCharSet2();
 			}
@@ -156,7 +156,7 @@ public class ChineseTab implements IMessageEditorTab{
 		allPossibleCharset2 = new ArrayList<>(hashSet); //去重
 
 		if(content==null) {
-			txtInput.setText(handledOriginalContent);
+			txtInput.setText("Nothing to show".getBytes());
 			return;
 		}else {
 			originContent = content;//存储原始数据
@@ -164,18 +164,51 @@ public class ChineseTab implements IMessageEditorTab{
 		}
 	}
 
+	public static boolean judgeIsRequest(byte[] content, String Charset) {
+		try {
+			String body = new String(content, Charset);
+			if (body.trim().startsWith("HTTP/")){
+				//System.out.println("Is Response ...");
+				return false;
+			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		//System.out.println("Is Request ...");
+		return true;
+	}
 
 	/**
 	 * 使用特定编码显示内容,变化原始编码。
 	 * getCurrentCharSet1() from allPossibleCharset1
 	 * getCurrentCharSet2() from allPossibleCharset2
 	 */
-	public void display() {
+	public void switch_display_and_format() {
 		try {
 			String rawCharSet = getCurrentCharSet1();
 			String newCharSet = getCurrentCharSet2();
-			//每一次变化都应该取最开始的内容，否则一旦出错，后续的处理都是错的
-			byte[] displayContent = CharSetHelper.covertCharSet(handledOriginalContent, rawCharSet, newCharSet);
+			//每一次变化都应该取最开始的内容，否则一旦出错，后续的处理都是错的 因此必须使用 originContent
+			byte[] displayContent = CharSetHelper.covertCharSet(originContent, rawCharSet, newCharSet);
+
+			//判断是请求还是响应体
+			boolean isReq = judgeIsRequest(displayContent, newCharSet);
+			if(isJsonContent(displayContent,newCharSet,isReq)){
+				displayContent = formatJson(displayContent, newCharSet, isReq);
+			}
+
+			//判断是否需要unicode格式化
+			try {
+				String contentStr = new String(displayContent, newCharSet);
+				if (needConvertUnicode(contentStr)){
+					int i=0;
+					do {
+						contentStr = StringEscapeUtils.unescapeJava(contentStr);
+						i++;
+					} while(needConvertUnicode(contentStr) && i<3);
+					displayContent = contentStr.getBytes(newCharSet);
+				}
+			} catch (UnsupportedEncodingException e1) {}
+
 			txtInput.setText(displayContent);
 			String text = String.format("Current Encoding: (Base %s <-> Using %s)", rawCharSet, newCharSet);
 			btnNewButton.setText(text);
@@ -227,7 +260,7 @@ public class ChineseTab implements IMessageEditorTab{
 		}
 	}
 
-	public static boolean isJSON(byte[] content,boolean isRequest) {
+	public static boolean isJsonType(byte[] content, boolean isRequest) {
 		if (isRequest) {
 			IRequestInfo requestInfo = helpers.analyzeRequest(content);
 			return requestInfo.getContentType() == IRequestInfo.CONTENT_TYPE_JSON;
@@ -262,42 +295,39 @@ public class ChineseTab implements IMessageEditorTab{
 		byte[] displayContent = content;
 		String text = null;
 		try {
-			String contentStr = new String(content, preHandleCharSet);
+			String contentStr = new String(content, detectCharset);
 			if (needConvertUnicode(contentStr)){
 				//先尝试进行JSON格式的美化，如果其中有Unicode编码也会自动完成转换
-				if (isJSON(content, isRequest)) {
-					displayContent = formatJson(content, preHandleCharSet, isRequest);
-				} else {
+				if (isJsonType(content, isRequest)) {
+					displayContent = formatJson(content, detectCharset, isRequest);
+				}
+
+				//判断是否格式化成功,如果内容相等表示格式化失败了
+				if(Arrays.equals(content, displayContent)){
 					int i=0;
 					do {
 						contentStr = StringEscapeUtils.unescapeJava(contentStr);
 						i++;
-					}while(needConvertUnicode(contentStr) && i<3);
-					displayContent = contentStr.getBytes(preHandleCharSet);
+					} while(needConvertUnicode(contentStr) && i<3);
+					displayContent = contentStr.getBytes(detectCharset);
 				}
 
-				//如果检测出来的编码与系统显示编码不一致，可以使用系统编码进行一次转换，一般都是一致的
-				if(preHandleCharSet != systemCharSet){
-					displayContent = CharSetHelper.covertCharSet(displayContent, preHandleCharSet, systemCharSet);
-				}
-				//按钮显示内容
-				text = String.format("Current Encoding: (Base %s <-> Using %s)", preHandleCharSet, systemCharSet);
-			}else {
-				//如果内容检测的编码和系统编码不一样,需要使用检测到的编码来进行一次转换
-				if(detectCharset != systemCharSet){
-					displayContent = CharSetHelper.covertCharSet(content, detectCharset, systemCharSet);
-
-					//此处增加Json格式化处理
-					if(isJsonContent(displayContent, systemCharSet, isRequest) ){
-						displayContent = formatJson(displayContent, systemCharSet, isRequest);
-					}
-					//按钮显示内容
-					text = String.format("Current Encoding: (Base %s <-> Using %s)", detectCharset, systemCharSet);
-				}
 			}
 		} catch (UnsupportedEncodingException e1) {}
-		handledOriginalContent = displayContent;
-		txtInput.setText(handledOriginalContent);//设置响应框初步显示的内容,后续可以对内容进行格式化
+
+		//如果内容检测的编码和系统编码不一样,需要使用检测到的编码来进行一次转换
+		if(detectCharset != systemCharSet){
+			displayContent = CharSetHelper.covertCharSet(content, detectCharset, systemCharSet);
+			//按钮显示内容
+			text = String.format("Current Encoding: (Base %s <-> Using %s)", detectCharset, systemCharSet);
+		}
+
+		//进行Json格式化
+		if(isJsonContent(displayContent, systemCharSet, isRequest)){
+			displayContent = formatJson(displayContent, systemCharSet, isRequest);
+		}
+
+		txtInput.setText(displayContent);//设置响应框初步显示的内容,后续可以对内容进行格式化
 		btnNewButton.setText(text);//设置按钮显示内容
 	}
 
@@ -310,18 +340,14 @@ public class ChineseTab implements IMessageEditorTab{
 	 */
 	private boolean isJsonContent(byte[] Content, String ContentCharSet, boolean isRequest) {
 		try {
-			Getter getter = new Getter(helpers);
-			byte[] body = getter.getBody(isRequest, Content);
-			List<String> headers = getter.getHeaderList(isRequest, Content);
 			//通过判断头部内容
-			for (String header : headers) {
-				if(header.contains("application/json")){
-					return true;
-				}
+			if (isJsonType(Content, isRequest)){
+				return true;
 			}
 			//直接判断内容格式
-			String beautyJSON = beauty(new String(body, ContentCharSet));
-			if(isLikeJson(beautyJSON)){
+			Getter getter = new Getter(helpers);
+			byte[] body = getter.getBody(isRequest, Content);
+			if(isLikeJson(beauty(new String(body, ContentCharSet)))){
 				return true;
 			}
 		}catch(Exception e) {
