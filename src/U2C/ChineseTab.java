@@ -198,15 +198,7 @@ public class ChineseTab implements IMessageEditorTab{
 
 			//判断是否需要unicode格式化
 			try {
-				String contentStr = new String(displayContent, newCharSet);
-				if (needConvertUnicode(contentStr)){
-					int i=0;
-					do {
-						contentStr = StringEscapeUtils.unescapeJava(contentStr);
-						i++;
-					} while(needConvertUnicode(contentStr) && i<3);
-					displayContent = contentStr.getBytes(newCharSet);
-				}
+				displayContent = unicode_decode(displayContent, newCharSet);
 			} catch (UnsupportedEncodingException e1) {}
 
 			txtInput.setText(displayContent);
@@ -291,31 +283,18 @@ public class ChineseTab implements IMessageEditorTab{
 	 */
 	private void preHandle(byte[] content, boolean isRequest) {
 		//String baseCharSet = CharSetHelper.getSystemCharSet();  //baseCharSet本编码应该与burp显示的编码强相关
-
 		byte[] displayContent = content;
-		String text = null;
 		try {
-			String contentStr = new String(content, detectCharset);
-			if (needConvertUnicode(contentStr)){
-				//先尝试进行JSON格式的美化，如果其中有Unicode编码也会自动完成转换
-				if (isJsonType(content, isRequest)) {
-					displayContent = formatJson(content, detectCharset, isRequest);
-				}
-
-				//判断是否格式化成功,如果内容相等表示格式化失败了
-				if(Arrays.equals(content, displayContent)){
-					int i=0;
-					do {
-						contentStr = StringEscapeUtils.unescapeJava(contentStr);
-						i++;
-					} while(needConvertUnicode(contentStr) && i<3);
-					displayContent = contentStr.getBytes(detectCharset);
-				}
-
+			//先尝试进行JSON格式的美化，如果其中有Unicode编码也会自动完成转换
+			if (isJsonType(content, isRequest)) {
+				displayContent = formatJson(content, detectCharset, isRequest);
 			}
+
+			displayContent = unicode_decode(displayContent, detectCharset);
 		} catch (UnsupportedEncodingException e1) {}
 
 		//如果内容检测的编码和系统编码不一样,需要使用检测到的编码来进行一次转换
+		String text = null;
 		if(detectCharset != systemCharSet){
 			displayContent = CharSetHelper.covertCharSet(content, detectCharset, systemCharSet);
 			//按钮显示内容
@@ -329,6 +308,20 @@ public class ChineseTab implements IMessageEditorTab{
 
 		txtInput.setText(displayContent);//设置响应框初步显示的内容,后续可以对内容进行格式化
 		btnNewButton.setText(text);//设置按钮显示内容
+	}
+
+	private byte[] unicode_decode(byte[] displayContent, String detectCharset) throws UnsupportedEncodingException {
+		String contentStr = new String(displayContent, detectCharset);
+		if (needConvertUnicode(contentStr)){
+			//判断是否格式化成功,如果内容相等表示格式化失败了
+			int i=0;
+			do {
+				contentStr = StringEscapeUtils.unescapeJava(contentStr);
+				i++;
+			} while(needConvertUnicode(contentStr) && i<3);
+			displayContent = contentStr.getBytes(detectCharset);
+		}
+		return displayContent;
 	}
 
 	/**
