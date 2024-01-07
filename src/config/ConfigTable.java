@@ -25,14 +25,12 @@ public class ConfigTable extends JTable
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private ConfigTableModel ConfigTableModel;
 
 
 
 	public ConfigTable(ConfigTableModel ConfigTableModel)
 	{
 		super(ConfigTableModel);
-		this.ConfigTableModel = ConfigTableModel;
 		this.setColumnModel(columnModel);
 		this.setFillsViewportHeight(true);//在table的空白区域显示右键菜单
 		//https://stackoverflow.com/questions/8903040/right-click-mouselistener-on-whole-jtable-component
@@ -43,11 +41,6 @@ public class ConfigTable extends JTable
 		registerListeners();
 		//switchEnable();//no need 
 		//table.setupTypeColumn()//can't set here, only can after table data loaded.
-	}
-
-	@Override
-	public ConfigTableModel getModel(){
-		return this.ConfigTableModel;
 	}
 
 	@Override
@@ -67,7 +60,7 @@ public class ConfigTable extends JTable
 	}
 
 	private void addClickSort() {
-		TableRowSorter<ConfigTableModel> sorter = new TableRowSorter<ConfigTableModel>(ConfigTableModel);
+		TableRowSorter<ConfigTableModel> sorter = new TableRowSorter<ConfigTableModel>((ConfigTableModel) this.getModel());
 		ConfigTable.this.setRowSorter(sorter);
 
 		JTableHeader header = this.getTableHeader();
@@ -85,34 +78,6 @@ public class ConfigTable extends JTable
 		});
 	}
 	
-	
-	private void switchEnable() {
-		this.addMouseListener(new MouseAdapter(){
-			public void mouseClicked(MouseEvent e)
-			{
-				if (e.getClickCount() == 2)// 实现双击
-				{
-					int row = ((ConfigTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-					int col = ((ConfigTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-					row = convertRowIndexToModel(row);
-					
-					String cellVal = (String) (ConfigTableModel.getValueAt(row, col)); // 获得点击单元格数据
-
-					if(col==3) {
-						if (cellVal.equalsIgnoreCase("true")) {
-							ConfigTableModel.setValueAt("false", row, col);
-						}else {
-							ConfigTableModel.setValueAt("true", row, col);
-						}
-						ConfigTableModel.fireTableRowsInserted(row, row);
-					}
-				}
-			}
-		});
-	}
-	
-
-
 
 	private void registerListeners(){
 		final ConfigTable _this = this;

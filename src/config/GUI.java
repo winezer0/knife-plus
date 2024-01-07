@@ -392,7 +392,7 @@ public class GUI extends JFrame {
 	//////////////////////////////methods//////////////////////////////////////
 
 	public void showToUI(Config config) {
-		tableModel = table.getModel();
+		tableModel = (ConfigTableModel) table.getModel();
 		tableModel.setConfigEntries(new ArrayList<ConfigEntry>());
 		//clearTable
 		
