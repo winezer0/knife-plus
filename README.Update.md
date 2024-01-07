@@ -3,7 +3,7 @@
 **knife 2.1.13**
 
 ```
-修改一些功能的默认开关【基于目前用户的常见习惯来设置】
+1、修改一些功能的默认开关【基于目前用户的常见习惯来设置】
 设置所有必须配置的属性为false
 设置配置文件常用的属性为true
 ```
@@ -11,7 +11,8 @@
 **knife 2.1.12**
 
 ```
-修复DismissedTargets功能逻辑bug
+1、修复DismissedTargets功能逻辑bug
+
 默认情况下 会drop掉 *.firefox.com *.mozilla.com的报文
 为空、为false也拦截，最终导致无法正常访问这两个通配符域名,
 该情况应该仅出现在2.1版本中，2.2版本中已经修改了diss的配置面板
@@ -33,6 +34,17 @@
 1、修复 bp高版本 插件加载异常NullPointerException
 ```
 
+**knife 2.1.9**
+
+```
+1、修改逻辑为 在点击按钮时 及 tav加载时 自动进行json格式化和unicode解码
+```
+
+**knife 2.1.8**
+
+```
+1、修复Add to Ex Scope时，In Scope为空 导致全部过滤的BUG。
+```
 
 **knife 2.1.7**
 
