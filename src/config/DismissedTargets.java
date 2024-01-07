@@ -54,6 +54,7 @@ public class DismissedTargets {
 	 * @return
 	 */
 	public static String ToJson(){//注意函数名称，如果是get set开头，会被认为是Getter和Setter函数，会在序列化过程中被调用。
+		if( targets.isEmpty()){ return "{}"; }
 		return new Gson().toJson(targets);
 	}
 	
@@ -83,8 +84,8 @@ public class DismissedTargets {
 	
 	public static void targetsInit() {
 		targets = new HashMap<String,String>();
-		targets.put("*.firefox.com", ACTION_DROP);
-		targets.put("*.mozilla.com", ACTION_DROP);
+//		targets.put("*.firefox.com", ACTION_DROP);
+//		targets.put("*.mozilla.com", ACTION_DROP);
 	}
 	
 	/**

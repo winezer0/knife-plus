@@ -241,7 +241,8 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		}
 		
 		HelperPlus getter = new HelperPlus(helpers);
-		if (messageIsRequest) {//丢弃干扰请求
+		if (messageIsRequest && this.tableModel.getConfigValueByKey("DismissedTargets") != null) {
+			//丢弃干扰请求
 			String url = getter.getFullURL(message.getMessageInfo()).toString();
 			String action = DismissedTargets.whichAction(url);
 			if (action.equalsIgnoreCase(DismissedTargets.ACTION_DONT_INTERCEPT)){
