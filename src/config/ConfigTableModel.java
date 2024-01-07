@@ -41,7 +41,7 @@ public class ConfigTableModel extends AbstractTableModel{
 		configEntries.add(new ConfigEntry("Scope_Set_Base_On_Wildcard_SubDomain", "",ConfigEntry.Config_Basic_Variable,true,false,"Scope Operation Based ON Wildcard Subdomain"));
 		String defaultExcludeHosts = ".*\\.baidu\\.com,.*\\.bdstatic\\.com,.*\\.msn\\.cn,.*\\.microsoft\\.com,.*\\.bing\\.com,.*\\.google\\.com,.*\\.firefox\\.com";
 		configEntries.add(new ConfigEntry("Auto_Append_Hosts_To_Exclude_Scope",defaultExcludeHosts,ConfigEntry.Config_Basic_Variable,false,false,"Auto Append This Hosts to Exclusion Scope On Startup"));
-		configEntries.add(new ConfigEntry("Auto_Save_Config_After_Update_Scope", "",ConfigEntry.Config_Basic_Variable,false,false,"Auto Saves Config After User Update Scope Advance"));
+		configEntries.add(new ConfigEntry("Auto_Save_Config_After_Update_Scope", "",ConfigEntry.Config_Basic_Variable,true,false,"Auto Saves Config After User Update Scope Advance"));
 
 		//用于指示当前burp显示编码的环境变量,一般是GBK,UTF-8,关闭时使用burp启动时指定的编码.
 		configEntries.add(new ConfigEntry("Display_Coding", "UTF-8",ConfigEntry.Config_Basic_Variable,false,false,"One Code In: GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
