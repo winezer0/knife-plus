@@ -438,7 +438,23 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 					}
 				}*/
 			}else {//response
-
+				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
+				String OptionsAddHeader = this.tableModel.getConfigValueByKey("OptionsAddHeader");
+				if(OptionsAddHeader!= null){
+					HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+					String getterMethod = helperPlus.getMethod(messageInfo);
+					if(getterMethod.equalsIgnoreCase("OPTIONS")) {
+						String headerName = "Content-Type";
+						String headerValue = "application/octet-stream";
+						if(OptionsAddHeader.contains(":")){
+							 headerName = OptionsAddHeader.split(":", 2)[0].trim();
+							 headerValue = OptionsAddHeader.split(":", 2)[1].trim();
+						}
+						byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(),headerName, headerValue);
+						messageInfo.setResponse(resp);
+						messageInfo.setComment("Add Type by Knife");//在logger中没有显示comment
+					}
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
