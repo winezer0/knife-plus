@@ -18,8 +18,6 @@ import com.google.gson.*;
 import config.GUI;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import sun.net.util.IPAddressUtil;
-
 
 public class Utils {
 	public static boolean isWindows() {
