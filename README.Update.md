@@ -1,5 +1,22 @@
 # 更新记录(本分支)
 
+**knife 2.1.15**
+
+```
+1、添加功能 为options方法自定义添加响应头 用于在history 界面过滤类型 （默认开启功能）
+
+默认在OPTIONS方法的响应中 添加 Content-Type: application/octet-stream 头
+如需要添加其他头部，请配置格式为 xxxheader: xxxxValue
+```
+**knife 2.1.14**
+
+```
+1、内置IPAddressUtil copy from sun.net.util.IPAddressUtil
+
+测试记录：
+burpsuite 2023.12.1 + jdk17 knife-2.1.14-jdk17.jar 正常
+burpsuite 2023.12.1 + jdk17 knife-2.1.14-jdk8.jar 正常
+```
 **knife 2.1.13**
 
 ```
