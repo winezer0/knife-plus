@@ -71,9 +71,9 @@ public class DismissedTargets {
 	 * 从GUI读取配置，写入当前对象
 	 */
 	public static void FromGUI() {
-		String dissmissed  = GUI.tableModel.getConfigValueByKey("DismissedTargets");
+		String dismissed  = GUI.tableModel.getConfigValueByKey("DismissedTargets");
 		try {
-			targets = DismissedTargets.FromJson(dissmissed);
+			targets = DismissedTargets.FromJson(dismissed);
 		}catch (Exception e) {
 			targetsInit();
 		}
