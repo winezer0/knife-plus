@@ -4,12 +4,7 @@ import java.awt.Component;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -439,21 +434,10 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 				}*/
 			}else {//response
 				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
-				String OptionsAddHeader = this.tableModel.getConfigValueByKey("OptionsAddHeader");
-				if(OptionsAddHeader!= null){
-					HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
-					String getterMethod = helperPlus.getMethod(messageInfo);
-					if(getterMethod.equalsIgnoreCase("OPTIONS")) {
-						String headerName = "Content-Type";
-						String headerValue = "application/octet-stream";
-						if(OptionsAddHeader.contains(":")){
-							 headerName = OptionsAddHeader.split(":", 2)[0].trim();
-							 headerValue = OptionsAddHeader.split(":", 2)[1].trim();
-						}
-						byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(),headerName, headerValue);
-						messageInfo.setResponse(resp);
-						messageInfo.setComment("Add Type by Knife");//在logger中没有显示comment
-					}
+				if(this.tableModel.getConfigValueByKey("MethodAddRespHeader")!= null){
+					CustomAddRespHeader(messageInfo,false);
+				} else if (this.tableModel.getConfigValueByKey("UrlAddRespHeader")!= null){
+					CustomAddRespHeader(messageInfo,true);
 				}
 			}
 		} catch (Exception e) {
@@ -461,7 +445,88 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			stderr.print(e.getStackTrace());
 		}
 	}
-	
+
+	/**
+	 * 基于请求 配置 添加相应头
+	 * @param messageInfo
+	 * @param BaseRequestMethod
+	 */
+	private void CustomAddRespHeader(IHttpRequestResponse messageInfo, boolean BaseRequestMethod) {
+		String curUrlOrMethodLower;
+		String addRespHeaderConfig;
+		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+		if (BaseRequestMethod) {
+			// {"OPTIONS":"Content-Type: application/octet-stream"}
+			addRespHeaderConfig = this.tableModel.getConfigValueByKey("MethodAddRespHeader");
+			// 获取 请求方法
+			curUrlOrMethodLower = helperPlus.getMethod(messageInfo).toLowerCase();
+		} else {
+			// {"www.baidu.com":"Content-Type: application/octet-stream"}
+			addRespHeaderConfig = this.tableModel.getConfigValueByKey("UrlAddRespHeader");
+			// 获取 请求URL
+			curUrlOrMethodLower = helperPlus.getFullURL(messageInfo).toString().toLowerCase();
+		}
+
+		//转换Json对象
+		HashMap<String, String> addRespHeaderMap;
+		try {
+			addRespHeaderMap = new Gson().fromJson(addRespHeaderConfig, HashMap.class);
+		} catch (Exception e) {
+			e.getMessage();
+			return;
+		}
+
+		// 从 MethodAddHeaderHashMap hashmap中进行查找 method 对应的动作
+		if (addRespHeaderMap == null || addRespHeaderMap.isEmpty()) return;
+
+		//转换为全小写键值对
+		HashMap<String, String> addRespHeaderMapLower = new HashMap();
+		for (String rule : addRespHeaderMap.keySet()) {
+			addRespHeaderMapLower.put(rule.toLowerCase(), addRespHeaderMap.get(rule));
+		}
+
+		//判断是否需要处理该请求方法
+		String addRespHeaderValue = null;
+
+		//分别判断处理动作
+		if(BaseRequestMethod){
+			if(addRespHeaderMapLower.containsKey(curUrlOrMethodLower)) {
+				addRespHeaderValue = addRespHeaderMapLower.get(curUrlOrMethodLower);
+			}
+		}else {
+			for (String ruleLower:addRespHeaderMapLower.keySet()) {
+				//跳过空 rule 的情况
+				if(ruleLower.equals("")) continue;
+
+				//字符串过滤方案 关键字
+				if (ruleLower.contains(curUrlOrMethodLower)) addRespHeaderValue = addRespHeaderMapLower.get(ruleLower);
+
+				//正则过滤方案 匹配 原始 key 匹配原始 URL
+				try {
+					Pattern pattern = Pattern.compile(ruleLower);
+					Matcher matcher = pattern.matcher(curUrlOrMethodLower);
+					if (matcher.find())  addRespHeaderValue = addRespHeaderMapLower.get(ruleLower);
+				} catch (Exception e) {
+					// 处理正则表达式语法错误的情况
+					e.getMessage();
+				}
+			}
+		}
+
+		//进行实际处理
+		if(addRespHeaderValue != null){
+			String respHeaderName = "Content-Type";
+			String respHeaderValue = "application/octet-stream";
+			if (addRespHeaderValue.contains(":")) {
+				respHeaderName = addRespHeaderConfig.split(":", 2)[0].trim();
+				respHeaderValue = addRespHeaderConfig.split(":", 2)[1].trim();
+			}
+			byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(), respHeaderName, respHeaderValue);
+			messageInfo.setResponse(resp);
+			messageInfo.setComment("Resp Add Header By Knife"); //在logger中没有显示comment
+		}
+	}
+
 	public static void confirmProxy() {
 		String proxy = JOptionPane.showInputDialog("Confirm Proxy Of Burp", "127.0.0.1:8080");
 		if (proxy != null) {
