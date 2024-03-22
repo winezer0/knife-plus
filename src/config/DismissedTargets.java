@@ -2,6 +2,8 @@ package config;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 
@@ -12,40 +14,54 @@ public class DismissedTargets {
 	public static HashMap<String, String> targets = new HashMap<String,String>();
 
 	public static String whichAction(String url) {
+		//输入URL 反向从 json文件中查找对应的动作 {"*.firefox.com":"Drop","*.mozilla.com":"Drop"}
 
+		// 获取 URL | HOST
 		String host = "";
 		try {
 			host = new URL(url).getHost().toLowerCase();
 			if (url.contains("?")){
-				url = url.substring(0,url.indexOf("?"));
+				url = url.substring(0,url.indexOf("?")).toLowerCase();
 			}
 		}catch (Exception e) {
 			return "";
 		}
 
+		//从GUI读取配置，写入当前对象 填充 targets
 		FromGUI();
-		for (String key:targets.keySet()) {
-			key = key.toLowerCase();
+
+		// 从 targets hashmap中进行查找 url 和 host 对应的动作
+		if(targets == null || targets.isEmpty()) return "";
+
+		for (String rawKey:targets.keySet()) {
+			String key = rawKey.toLowerCase();
+			//字符串过滤方案 url
 			if (url.startsWith(key)) {
 				return targets.get(key);
 			}
+			//字符串过滤方案 host
 			if (host.equalsIgnoreCase(key)) {
 				return targets.get(key);
 			}
-			
-			/*
-			Pattern pt = Pattern.compile(key);
-			Matcher matcher = pt.matcher(url);
-			if (matcher.find()) {//多次查找
-				return targets.get(key);
-			}*/
-			
-			if (key.startsWith("*.")){
-				String tmpDomain = key.replaceFirst("\\*","");
-				if (host.endsWith(tmpDomain)){
-					return targets.get(key);
-				}
+
+			//正则过滤方案 忽略大小写
+			try {
+				Pattern pattern = Pattern.compile(rawKey, Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(url);
+				if (matcher.find()) return targets.get(rawKey);
+			} catch (Exception e) {
+				// 处理正则表达式语法错误的情况
+				e.getMessage();
 			}
+
+//			//简单的通配符过滤方案
+//			if (key.startsWith("*.")){
+//				String tmpDomain = key.replaceFirst("\\*","");
+//				if (host.endsWith(tmpDomain)){
+//					return targets.get(key);
+//				}
+//			}
+
 		}
 		return "";
 	}
@@ -84,8 +100,6 @@ public class DismissedTargets {
 	
 	public static void targetsInit() {
 		targets = new HashMap<String,String>();
-//		targets.put("*.firefox.com", ACTION_DROP);
-//		targets.put("*.mozilla.com", ACTION_DROP);
 	}
 	
 	/**

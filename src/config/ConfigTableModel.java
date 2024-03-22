@@ -43,10 +43,10 @@ public class ConfigTableModel extends AbstractTableModel{
 
 		//默认不添加到scope的域名 //需要优化,不能每次都添加
 		String defaultExcludeHosts = ".*\\.baidu\\.com,.*\\.bdstatic\\.com,.*\\.msn\\.cn,.*\\.microsoft\\.com,.*\\.bing\\.com,.*\\.google\\.com,.*\\.firefox\\.com";
-		configEntries.add(new ConfigEntry("Auto_Append_Hosts_To_Exclude_Scope",defaultExcludeHosts,ConfigEntry.Config_Basic_Variable,false,false,"高级配置：正则写法|启动时将主机追加到排除Scope"));
+		configEntries.add(new ConfigEntry("Auto_Append_Hosts_To_Exclude_Scope",defaultExcludeHosts,ConfigEntry.Config_Basic_Variable,false,false,"高级配置：正则|启动时将主机追加到排除Scope"));
 
 		//流量过滤配置 //需要优化, 默认应该开启+函数处理逻辑应该优化
-		configEntries.add(new ConfigEntry("DismissedTargets", "{}",ConfigEntry.Config_Basic_Variable,true,false,"请求操作：通配符写法|{\"*.firefox.com\":\"Drop\",\"*.mozilla.com\":\"Drop\"}"));
+		configEntries.add(new ConfigEntry("DismissedTargets", "{}",ConfigEntry.Config_Basic_Variable,true,false,"请求处理：正则|{\".*\\.firefox\\.com\":\"Drop\",\".*\\.mozilla\\.com\":\"Drop\"}"));
 
 		//用于指示当前burp显示编码的环境变量,一般是GBK,UTF-8,关闭时使用burp启动时指定的编码.
 		configEntries.add(new ConfigEntry("Display_Coding", "UTF-8",ConfigEntry.Config_Basic_Variable,false,false,"响应编码：显示编码 GBK|GB2312|UTF-8等"));
