@@ -35,15 +35,22 @@ public class DismissedTargets {
 		if(targets == null || targets.isEmpty()) return "";
 
 		for (String rawKey:targets.keySet()) {
+			//跳过空key的情况
+			if(rawKey.equals("")) continue;
+
 			String key = rawKey.toLowerCase();
 			//字符串过滤方案 url
 			if (url.startsWith(key)) {
 				return targets.get(key);
 			}
+
 			//字符串过滤方案 host
 			if (host.equalsIgnoreCase(key)) {
 				return targets.get(key);
 			}
+
+			//字符串过滤方案 关键字
+			if (rawUrl.contains(key)) return targets.get(key);
 
 			//正则过滤方案 忽略大小写 匹配 原始 key 匹配原始 URL
 			try {
