@@ -40,15 +40,9 @@ public class DismissedTargets {
 
 			String key = rawKey.toLowerCase();
 			//字符串过滤方案 url
-			if (url.startsWith(key)) {
-				return targets.get(key);
-			}
-
+			if (url.startsWith(key))  return targets.get(key);
 			//字符串过滤方案 host
-			if (host.equalsIgnoreCase(key)) {
-				return targets.get(key);
-			}
-
+			if (host.equalsIgnoreCase(key))	return targets.get(key);
 			//字符串过滤方案 关键字
 			if (rawUrl.contains(key)) return targets.get(key);
 
