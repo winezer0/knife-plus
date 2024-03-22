@@ -54,8 +54,8 @@ public class ConfigTableModel extends AbstractTableModel{
 		configEntries.add(new ConfigEntry("Coding_Set_Using", "GBK,UTF-8",ConfigEntry.Config_Basic_Variable,true,false,"响应编码：编码目标 GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
 
 		//自动化处理一些常用的属性
-		configEntries.add(new ConfigEntry("MethodAddRespHeader", "{\"OPTIONS\":\"Content-Type: application/octet-stream\"}",ConfigEntry.Config_Basic_Variable,true,false,"修改响应：方法名 基于请求方法添加响应头"));
-		configEntries.add(new ConfigEntry("UrlAddRespHeader", "{\"picture\":\"Content-Type: application/octet-stream\"}",ConfigEntry.Config_Basic_Variable,false,false,"修改响应：关键字|正则 基于请求URL添加响应头"));
+		configEntries.add(new ConfigEntry("AddRespHeaderByReqMethod", "{\"OPTIONS\":\"Content-Type: application/octet-stream\"}",ConfigEntry.Config_Basic_Variable,true,false,"修改响应：方法名 基于请求方法添加响应头"));
+		configEntries.add(new ConfigEntry("AddRespHeaderByReqURL", "{\"picture\":\"Content-Type: application/octet-stream\"}",ConfigEntry.Config_Basic_Variable,false,false,"修改响应：关键字|正则 基于请求URL添加响应头"));
 		configEntries.add(new ConfigEntry("Last-Modified", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除Last-Modified头"));
 		configEntries.add(new ConfigEntry("If-Modified-Since", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除If-Modified-Since头"));
 		configEntries.add(new ConfigEntry("If-None-Match", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除If-None-Match头"));

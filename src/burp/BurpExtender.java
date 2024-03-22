@@ -434,9 +434,9 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 				}*/
 			}else {//response
 				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
-				if(this.tableModel.getConfigValueByKey("MethodAddRespHeader")!= null){
+				if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
 					CustomAddRespHeader(messageInfo,false);
-				} else if (this.tableModel.getConfigValueByKey("UrlAddRespHeader")!= null){
+				} else if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
 					CustomAddRespHeader(messageInfo,true);
 				}
 			}
@@ -457,12 +457,12 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
 		if (BaseRequestMethod) {
 			// {"OPTIONS":"Content-Type: application/octet-stream"}
-			addRespHeaderConfig = this.tableModel.getConfigValueByKey("MethodAddRespHeader");
+			addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod");
 			// 获取 请求方法
 			curUrlOrMethodLower = helperPlus.getMethod(messageInfo).toLowerCase();
 		} else {
 			// {"www.baidu.com":"Content-Type: application/octet-stream"}
-			addRespHeaderConfig = this.tableModel.getConfigValueByKey("UrlAddRespHeader");
+			addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL");
 			// 获取 请求URL
 			curUrlOrMethodLower = helperPlus.getFullURL(messageInfo).toString().toLowerCase();
 		}
