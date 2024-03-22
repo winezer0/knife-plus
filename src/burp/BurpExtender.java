@@ -518,8 +518,8 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			String respHeaderName = "Content-Type";
 			String respHeaderValue = "application/octet-stream";
 			if (addRespHeaderValue.contains(":")) {
-				respHeaderName = addRespHeaderConfig.split(":", 2)[0].trim();
-				respHeaderValue = addRespHeaderConfig.split(":", 2)[1].trim();
+				respHeaderName = addRespHeaderValue.split(":", 2)[0].trim();
+				respHeaderValue = addRespHeaderValue.split(":", 2)[1].trim();
 			}
 			byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(), respHeaderName, respHeaderValue);
 			messageInfo.setResponse(resp);
