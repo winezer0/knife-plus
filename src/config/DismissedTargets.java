@@ -13,17 +13,15 @@ public class DismissedTargets {
 
 	public static HashMap<String, String> targets = new HashMap<String,String>();
 
-	public static String whichAction(String rawUrl) {
+	public static String whichAction(String url) {
 		//输入URL 反向从 json文件中查找对应的动作 {"*.firefox.com":"Drop","*.mozilla.com":"Drop"}
 
 		//获取 小写的 URL | HOST
-		String url = rawUrl;
+		String subUrl = url;
 		String host = "";
 		try {
-			host = new URL(url).getHost().toLowerCase();
-			if (url.contains("?")){
-				url = url.substring(0,url.indexOf("?")).toLowerCase();
-			}
+			host = new URL(subUrl).getHost();
+			if (subUrl.contains("?")) subUrl = subUrl.substring(0,subUrl.indexOf("?"));
 		}catch (Exception e) {
 			return "";
 		}
@@ -34,23 +32,22 @@ public class DismissedTargets {
 		// 从 targets hashmap中进行查找 url 和 host 对应的动作
 		if(targets == null || targets.isEmpty()) return "";
 
-		for (String rawKey:targets.keySet()) {
+		for (String key:targets.keySet()) {
 			//跳过空key的情况
-			if(rawKey.equals("")) continue;
+			if(key.equals("")) continue;
 
-			String key = rawKey.toLowerCase();
 			//字符串过滤方案 url
-			if (url.startsWith(key))  return targets.get(key);
+			if (subUrl.toLowerCase().startsWith(key.toLowerCase()))  return targets.get(key);
 			//字符串过滤方案 host
 			if (host.equalsIgnoreCase(key))	return targets.get(key);
 			//字符串过滤方案 关键字
-			if (rawUrl.contains(key)) return targets.get(key);
+			if (url.toLowerCase().contains(key.toLowerCase())) return targets.get(key);
 
 			//正则过滤方案 忽略大小写 匹配 原始 key 匹配原始 URL
 			try {
-				Pattern pattern = Pattern.compile(rawKey, Pattern.CASE_INSENSITIVE);
-				Matcher matcher = pattern.matcher(rawUrl);
-				if (matcher.find()) return targets.get(rawKey);
+				Pattern pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(url);
+				if (matcher.find()) return targets.get(key);
 			} catch (Exception e) {
 				// 处理正则表达式语法错误的情况
 				e.getMessage();
