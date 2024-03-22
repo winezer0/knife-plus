@@ -13,10 +13,11 @@ public class DismissedTargets {
 
 	public static HashMap<String, String> targets = new HashMap<String,String>();
 
-	public static String whichAction(String url) {
+	public static String whichAction(String rawUrl) {
 		//输入URL 反向从 json文件中查找对应的动作 {"*.firefox.com":"Drop","*.mozilla.com":"Drop"}
 
-		// 获取 URL | HOST
+		//获取 小写的 URL | HOST
+		String url = rawUrl;
 		String host = "";
 		try {
 			host = new URL(url).getHost().toLowerCase();
@@ -44,10 +45,10 @@ public class DismissedTargets {
 				return targets.get(key);
 			}
 
-			//正则过滤方案 忽略大小写
+			//正则过滤方案 忽略大小写 匹配 原始 key 匹配原始 URL
 			try {
 				Pattern pattern = Pattern.compile(rawKey, Pattern.CASE_INSENSITIVE);
-				Matcher matcher = pattern.matcher(url);
+				Matcher matcher = pattern.matcher(rawUrl);
 				if (matcher.find()) return targets.get(rawKey);
 			} catch (Exception e) {
 				// 处理正则表达式语法错误的情况
