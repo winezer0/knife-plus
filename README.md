@@ -38,6 +38,11 @@ https://github.com/bit4woo/knife
 
 在 Add_Hosts_Exclude_Scope为True的情况下:
 支持通过配置添加scope exclude域名 (正则)
+
+优化 dismiss功能，支持前缀|关键字|正则表达式
+支持 OPTIONS 等方法过滤（通过添加请求头）
+提示 高级的 AddRespHeader XXXIII 功能，可以基于 请求方法和请求URL来对响应头进行修改，最终实现过滤 OPTIONS等功能
+
 ```
 
 本分支更多使用细节请查看 README.Update.md

@@ -1,5 +1,39 @@
 # 更新记录(本分支)
 
+**knife 2.1.17**
+
+```
+1、优化 OPtions Add Header 功能 为 AddRespHeaderByReqMethod，
+实现 支持为任意请求方法添加 任意格式的响应头
+
+{"OPTIONS":"Content-Type: application/octet-stream"}
+在 OPTIONS 请求方法的响应中 添加 Content-Type: application/octet-stream 头
+
+2、添加 AddRespHeaderByReqURL 功能, 实现为 任意请求URL 添加 任意格式的响应头
+{"picture":"Content-Type: application/octet-stream"}
+在 URL包含picture的请求的响应中 添加 Content-Type: application/octet-stream 头
+支持关键字和正则表达式,一般关键字就够用了 默认关闭该功能
+```
+
+**knife 2.1.16**
+
+```
+1、基于使用习惯更新面板默认设置。
+
+2、汉化功能描述 并重新排序
+
+3、优化 DismissedTargets,修改 过滤方案
+
+修改 host前缀+url前缀+简单通配符 为 host前缀+url前缀+URL关键字+正则
+
+注意 host前缀+url前缀 匹配的是 小写 host 和 小写 无参数 url
+
+注意 URL关键字和 正则 匹配的是原始URL ( 含参数)
+
+一般来讲 前缀+关键字批评 已经足够
+
+```
+
 **knife 2.1.15**
 
 ```
