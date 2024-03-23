@@ -1,25 +1,26 @@
-package knife;
+package plus;
 
-import burp.*;
-import config.GUI;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.util.HashSet;
 
-public class AddHostToExScopeAdvMenu extends JMenuItem {//JMenuItem vs. JMenu
+import javax.swing.JMenuItem;
 
-    public AddHostToExScopeAdvMenu(BurpExtender burp){
-        this.setText("^_^ Add Host To ExScope Adv");
-        this.addActionListener(new AddHostToExScopeAdv_Action(burp,burp.invocation));
+import burp.*;
+import config.GUI;
+
+public class AddHostToInScopeAdvMenu extends JMenuItem {//JMenuItem vs. JMenu
+
+    public AddHostToInScopeAdvMenu(BurpExtender burp){
+        this.setText("^_^ Add Host To InScope Adv");
+        this.addActionListener(new AddHostToInScopeAdv_Action(burp,burp.invocation));
     }
 }
 
 
 
-class AddHostToExScopeAdv_Action implements ActionListener{
+class AddHostToInScopeAdv_Action implements ActionListener{
     //scope matching is actually String matching!!
     private IContextMenuInvocation invocation;
     public BurpExtender myburp;
@@ -28,7 +29,7 @@ class AddHostToExScopeAdv_Action implements ActionListener{
     public PrintWriter stderr;
     public IBurpExtenderCallbacks callbacks;
     //callbacks.printOutput(Integer.toString(invocation.getToolFlag()));//issue tab of target map is 16
-    public AddHostToExScopeAdv_Action(BurpExtender burp, IContextMenuInvocation invocation) {
+    public AddHostToInScopeAdv_Action(BurpExtender burp, IContextMenuInvocation invocation) {
         this.invocation  = invocation;
         this.helpers = burp.helpers;
         this.callbacks = burp.callbacks;
@@ -46,13 +47,13 @@ class AddHostToExScopeAdv_Action implements ActionListener{
             for(IHttpRequestResponse message:messages) {
                 String host = message.getHttpService().getHost();
                 if(wildcardSet!=null){
-                    host = Utils.hostToWildcardHostWithDotEscape(host);
+                    host = UtilsPlus.hostToWildcardHostWithDotEscape(host);
                 }else {
-                    host = Utils.dotToEscapeDot(host);
+                    host = UtilsPlus.dotToEscapeDot(host);
                 }
                 hostHashSet.add(host);
             }
-            Utils.AddHostToExScopeAdvByProjectConfig(callbacks,hostHashSet);
+            UtilsPlus.AddHostToInScopeAdvByProjectConfig(callbacks,hostHashSet);
         }
         catch (Exception e1)
         {

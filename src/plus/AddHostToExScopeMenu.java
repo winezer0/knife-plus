@@ -1,4 +1,4 @@
-package knife;
+package plus;
 
 import burp.*;
 
@@ -43,7 +43,7 @@ class AddHostToExScope_Action implements ActionListener{
         	for(IHttpRequestResponse message:messages) {
         		String url = message.getHttpService().toString();
 				URL shortUrl = new URL(url);
-				Utils.AddAnyHostToInScopeAdvByProjectConfig(callbacks);
+				UtilsPlus.AddAnyHostToInScopeAdvByProjectConfig(callbacks);
 	        	callbacks.excludeFromScope(shortUrl);
         	}
         }

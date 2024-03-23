@@ -22,6 +22,7 @@ import config.ConfigTableModel;
 import config.DismissedTargets;
 import config.GUI;
 import knife.*;
+import plus.*;
 
 public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFactory, ITab, IHttpListener,IProxyListener,IExtensionStateListener {
 
@@ -77,7 +78,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		callbacks.registerExtensionStateListener(this);
 
 		//自动加载用户指定的 Project Json文件,如果不存在会自动保存当前配置
-		Utils.autoLoadProjectConfig(callbacks,true);
+		UtilsPlus.autoLoadProjectConfig(callbacks,true);
 	}
 
 
