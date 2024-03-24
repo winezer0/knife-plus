@@ -52,7 +52,7 @@ class AddHostToExScopeAdv_Action implements ActionListener{
                 }
                 hostHashSet.add(host);
             }
-            UtilsPlus.AddHostToExScopeAdvByProjectConfig(callbacks,hostHashSet);
+            AdvScopeUtils.addHostToExScopeAdv(callbacks, hostHashSet);
         }
         catch (Exception e1)
         {

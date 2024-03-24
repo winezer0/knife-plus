@@ -53,7 +53,7 @@ class AddHostToInScopeAdv_Action implements ActionListener{
                 }
                 hostHashSet.add(host);
             }
-            UtilsPlus.AddHostToInScopeAdvByProjectConfig(callbacks,hostHashSet);
+            AdvScopeUtils.addHostToInScopeAdv(callbacks,hostHashSet);
         }
         catch (Exception e1)
         {

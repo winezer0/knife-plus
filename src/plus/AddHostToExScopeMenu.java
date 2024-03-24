@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.net.URL;
+import java.util.HashSet;
 
 public class AddHostToExScopeMenu extends JMenuItem {//JMenuItem vs. JMenu
 
@@ -31,25 +31,23 @@ class AddHostToExScope_Action implements ActionListener{
 		this.invocation  = invocation;
         this.helpers = burp.helpers;
         this.callbacks = burp.callbacks;
-        this.stderr = burp.stderr;
+		this.stderr = burp.stderr;
+		this.stdout = burp.stdout;
 	}
 
 	
 	@Override
 	public void actionPerformed(ActionEvent e)
-    {
-       try{
-        	IHttpRequestResponse[] messages = invocation.getSelectedMessages();
-        	for(IHttpRequestResponse message:messages) {
-        		String url = message.getHttpService().toString();
-				URL shortUrl = new URL(url);
-				UtilsPlus.AddAnyHostToInScopeAdvByProjectConfig(callbacks);
-	        	callbacks.excludeFromScope(shortUrl);
-        	}
-        }
-        catch (Exception e1)
-        {
-            e1.printStackTrace(stderr);
-        }
-    }
+	{
+		IHttpRequestResponse[] messages = invocation.getSelectedMessages();
+
+		if (AdvScopeUtils.isAdvScopeMode(callbacks)){
+			//高级模式
+			AdvScopeUtils.addHostToExScopeAdv(callbacks, UtilsPlus.getHostSetFromMessages(messages));
+		} else {
+			//普通模式
+			UtilsPlus.excludeFromScopeBatch(callbacks, UtilsPlus.getUrlSetFromMessages(messages));
+		}
+	}
+
 }

@@ -37,6 +37,6 @@ class ProjectConfigSaveMenu_Action implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e)
     {
-	   UtilsPlus.autoSaveProjectConfig(callbacks);
+	   AdvScopeUtils.autoSaveProjectConfig(callbacks);
     }
 }

@@ -37,6 +37,6 @@ class ProjectConfigLoadMenu_Action implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e)
     {
-	   UtilsPlus.autoLoadProjectConfig(callbacks,false);
+	   AdvScopeUtils.autoLoadProjectConfig(callbacks,false);
     }
 }

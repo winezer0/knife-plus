@@ -39,7 +39,7 @@ class ProjectScopeClear_Action implements ActionListener{
     public void actionPerformed(ActionEvent e)
     {
         try{
-            UtilsPlus.ClearAllScopeAdvByProjectConfig(callbacks);
+            AdvScopeUtils.ClearAllScopeAdv(callbacks);
         }
         catch (Exception e1)
         {
