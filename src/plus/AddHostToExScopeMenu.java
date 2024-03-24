@@ -6,7 +6,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.util.HashSet;
 
 public class AddHostToExScopeMenu extends JMenuItem {//JMenuItem vs. JMenu
 
@@ -46,7 +45,7 @@ class AddHostToExScope_Action implements ActionListener{
 			AdvScopeUtils.addHostToExScopeAdv(callbacks, UtilsPlus.getHostSetFromMessages(messages));
 		} else {
 			//普通模式
-			UtilsPlus.excludeFromScopeBatch(callbacks, UtilsPlus.getUrlSetFromMessages(messages));
+			UtilsPlus.addHostToExScope(callbacks, UtilsPlus.getUrlSetFromMessages(messages));
 		}
 	}
 

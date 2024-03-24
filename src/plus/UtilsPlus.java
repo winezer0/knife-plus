@@ -180,7 +180,7 @@ public class UtilsPlus {
      * @param callbacks
      * @param urlHashSet
      */
-    public static void excludeFromScopeBatch(IBurpExtenderCallbacks callbacks, HashSet<String> urlHashSet) {
+    public static void addHostToExScope(IBurpExtenderCallbacks callbacks, HashSet<String> urlHashSet) {
         if(urlHashSet.size()>0){
             for (String url : urlHashSet) {
                 try {
@@ -198,7 +198,7 @@ public class UtilsPlus {
      * @param callbacks
      * @param urlHashSet
      */
-    public static void includeInScopeBatch(IBurpExtenderCallbacks callbacks, HashSet<String> urlHashSet) {
+    public static void addHostToInScope(IBurpExtenderCallbacks callbacks, HashSet<String> urlHashSet) {
         if(urlHashSet.size()>0){
             for (String url : urlHashSet) {
                 try {

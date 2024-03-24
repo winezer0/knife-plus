@@ -3,9 +3,6 @@ package plus;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashSet;
 
 import javax.swing.JMenuItem;
 
@@ -53,9 +50,7 @@ class AddHostToInScope_Action implements ActionListener{
 			AdvScopeUtils.addHostToInScopeAdv(callbacks, UtilsPlus.getHostSetFromMessages(messages));
 		} else {
 			//普通模式
-			UtilsPlus.includeInScopeBatch(callbacks, UtilsPlus.getUrlSetFromMessages(messages));
+			UtilsPlus.addHostToInScope(callbacks, UtilsPlus.getUrlSetFromMessages(messages));
 		}
     }
-
-
 }
