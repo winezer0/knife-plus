@@ -441,22 +441,28 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 						stdout.println(entry);
 					}
 				}*/
-			}else {//response
+			} else {//response
 				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
 				if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
 					AddRespHeaderByReqMethod(messageInfo);
 				}
+
 				//给没有后缀的图片URL添加响应头,便于过滤筛选
 				if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
 					AddRespHeaderByReqUrl(messageInfo);
 				}
+
+				//给Json格式的请求的响应添加响应头,防止被Js过滤
+				if (this.tableModel.getConfigValueByKey("AddRespHeaderByRespHeader")!= null){
+					AddRespHeaderByRespHeader(messageInfo);
+				}
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			stderr.print(e.getStackTrace());
 		}
 	}
-
 
 
 	private void AddRespHeaderByReqMethod(IHttpRequestResponse messageInfo){
@@ -470,10 +476,9 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		HashMap<String, String> addRespHeaderRuleMap = UtilsPlus.parseJsonRule2HashMap(addRespHeaderConfig, true);
 
 		if(addRespHeaderRuleMap != null && addRespHeaderRuleMap.containsKey(curMethod)) {
-			//获取需要添加的响应头  //这种模式下每种方法只支持添加一个请求头配置
-			String addRespHeaderValue = addRespHeaderRuleMap.get(curMethod);
-			//设置响应头信息
-			msgInfoSetResponse(messageInfo, addRespHeaderValue);
+			//获取需要添加的响应头 每个方法只支持一种动作,更多的动作建议使用其他类型的修改方式
+			String addRespHeaderLine = addRespHeaderRuleMap.get(curMethod);
+			msgInfoSetResponse(messageInfo, addRespHeaderLine);
 		}
 	}
 
@@ -486,50 +491,78 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		String addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL");
 		//解析Json格式的规则
 		HashMap<String, String> addRespHeaderRuleMap = UtilsPlus.parseJsonRule2HashMap(addRespHeaderConfig, true);
+
 		if (addRespHeaderRuleMap == null) return;
 
+		//循环 获取需要添加的响应头 并 设置响应头信息
 		for (String rule:addRespHeaderRuleMap.keySet()) {
-			//获取需要添加的响应头  //这种模式下每种方法只支持添加一个请求头配置
-			String addRespHeaderValue = null;
+			//获取需要添加的响应头 每个URL支持多种动作规则
+			String addRespHeaderLine = getActionFromRuleMap(addRespHeaderRuleMap, rule, curUrl);
+			msgInfoSetResponse(messageInfo, addRespHeaderLine);
+		}
+	}
 
-			//字符串过滤方案 关键字
-			if (curUrl.contains(rule)) {
-				addRespHeaderValue = addRespHeaderRuleMap.get(rule);
-			}
+	private void AddRespHeaderByRespHeader(IHttpRequestResponse messageInfo){
+		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+		//获取对应的Json格式规则 // {"www.baidu.com":"Content-Type: application/octet-stream"}
+		String addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByRespHeader");
+		//解析Json格式的规则
+		HashMap<String, String> addRespHeaderRuleMap = UtilsPlus.parseJsonRule2HashMap(addRespHeaderConfig,false);
+		if (addRespHeaderRuleMap == null) return;
 
-			//正则过滤方案 匹配 原始 key 匹配原始 URL
-			try {
-				Pattern pattern = Pattern.compile(rule);
-				Matcher matcher = pattern.matcher(curUrl);
-				if (matcher.find()){
-					addRespHeaderValue = addRespHeaderRuleMap.get(rule);
+		//获取响应头
+		List<String> responseHeaders = helperPlus.getHeaderList(false, messageInfo);
+		for (String rule:addRespHeaderRuleMap.keySet()) {
+			for (String responseHeader:responseHeaders){
+				//获取需要添加的响应头 每个规则只处理一种响应头，支持多种动作规则
+				String addRespHeaderLine = getActionFromRuleMap(addRespHeaderRuleMap, rule, responseHeader);
+				if(addRespHeaderLine!=null){
+					msgInfoSetResponse(messageInfo, addRespHeaderLine);
+					break; 	//匹配成功后就进行下一条规则的匹配
 				}
-			} catch (Exception e) {
-				// 处理正则表达式语法错误的情况
-				e.getMessage();
-			}
-
-			if(addRespHeaderValue !=null){
-				//设置响应头信息
-				msgInfoSetResponse(messageInfo, addRespHeaderValue);
 			}
 		}
 	}
 
 
 	/**
-	 * @param messageInfo
-	 * @param addRespHeaderValue
+	 * 从 规则动作 Map 中 取出符合当前 规则 的 动作
+	 * @param ruleMap
+	 * @param string
+	 * @param rule
+	 * @return
 	 */
-	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderValue) {
-		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+	private String getActionFromRuleMap(HashMap<String, String> ruleMap, String rule, String string) {
+		String addRespHeaderValue = null;
+
+		//字符串过滤方案 关键字
+		if (string.contains(rule)) {
+			addRespHeaderValue = ruleMap.get(rule);
+			return addRespHeaderValue;
+		}
+
+		//正则过滤方案 匹配 原始 key 匹配原始 URL
+		try {
+			Pattern pattern = Pattern.compile(rule, Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(string);
+			if (matcher.find()) addRespHeaderValue = ruleMap.get(rule);
+		} catch (Exception e) {
+			// 处理正则表达式语法错误的情况
+			e.getMessage();
+		}
+		return addRespHeaderValue;
+	}
+
+	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderLine) {
 		//进行实际处理
-		if(addRespHeaderValue != null){
+		if(addRespHeaderLine != null){
+			HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+			stdout.println(String.format("message Info Set Response add Resp Header Line: %s", addRespHeaderLine));
 			String respHeaderName = "Content-Type";
 			String respHeaderValue = "application/octet-stream";
-			if (addRespHeaderValue.contains(":")) {
-				respHeaderName = addRespHeaderValue.split(":", 2)[0].trim();
-				respHeaderValue = addRespHeaderValue.split(":", 2)[1].trim();
+			if (addRespHeaderLine.contains(":")) {
+				respHeaderName = addRespHeaderLine.split(":", 2)[0].trim();
+				respHeaderValue = addRespHeaderLine.split(":", 2)[1].trim();
 			}
 			byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(), respHeaderName, respHeaderValue);
 			messageInfo.setResponse(resp);
