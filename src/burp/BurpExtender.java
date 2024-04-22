@@ -444,12 +444,11 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			}else {//response
 				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
 				if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
-					CustomAddRespHeaderByHttpInfo(messageInfo,false);
+					AddRespHeaderByReqMethod(messageInfo);
 				}
-
 				//给没有后缀的图片URL添加响应头,便于过滤筛选
 				if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
-					CustomAddRespHeaderByHttpInfo(messageInfo,true);
+					AddRespHeaderByReqUrl(messageInfo);
 				}
 			}
 		} catch (Exception e) {
@@ -458,97 +457,71 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		}
 	}
 
-	/**
-	 * 基于请求 配置 添加响应头
-	 * @param messageInfo
-	 * @param BaseRequestMethod
-	 */
-	private void CustomAddRespHeaderByHttpInfo(IHttpRequestResponse messageInfo, boolean BaseRequestMethod) {
-		String curUrlOrMethodLower;
-		String addRespHeaderConfig;
+
+
+	private void AddRespHeaderByReqMethod(IHttpRequestResponse messageInfo){
 		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
-		if (BaseRequestMethod) {
-			// {"OPTIONS":"Content-Type: application/octet-stream"}
-			addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod");
-			// 获取 请求方法
-			curUrlOrMethodLower = helperPlus.getMethod(messageInfo).toLowerCase();
-		} else {
-			// {"www.baidu.com":"Content-Type: application/octet-stream"}
-			addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL");
-			// 获取 请求URL
-			curUrlOrMethodLower = helperPlus.getFullURL(messageInfo).toString().toLowerCase();
-		}
+		// 获取 请求方法
+		String curMethod = helperPlus.getMethod(messageInfo).toLowerCase();
 
+		//获取对应的Json格式规则  {"OPTIONS":"Content-Type: application/octet-stream"}
+		String addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod");
 		//解析Json格式的规则
-		HashMap<String, String> addRespHeaderMapLower = parseJsonRule2HashMap(addRespHeaderConfig, true);
-		if (addRespHeaderMapLower == null) return;
+		HashMap<String, String> addRespHeaderRuleMap = UtilsPlus.parseJsonRule2HashMap(addRespHeaderConfig, true);
 
-		//判断是否需要处理该请求方法
-		String addRespHeaderValue = null;
+		if(addRespHeaderRuleMap != null && addRespHeaderRuleMap.containsKey(curMethod)) {
+			//获取需要添加的响应头  //这种模式下每种方法只支持添加一个请求头配置
+			String addRespHeaderValue = addRespHeaderRuleMap.get(curMethod);
+			//设置响应头信息
+			msgInfoSetResponse(messageInfo, addRespHeaderValue);
+		}
+	}
 
-		// 从 MethodAddHeaderHashMap hashmap中进行查找 批量规则 和 对应的动作
-		if(BaseRequestMethod){
-			if(addRespHeaderMapLower.containsKey(curUrlOrMethodLower)) {
-				addRespHeaderValue = addRespHeaderMapLower.get(curUrlOrMethodLower);
+	private void AddRespHeaderByReqUrl(IHttpRequestResponse messageInfo){
+		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+		// 获取 请求URL
+		String curUrl = helperPlus.getFullURL(messageInfo).toString().toLowerCase();
+
+		//获取对应的Json格式规则 // {"www.baidu.com":"Content-Type: application/octet-stream"}
+		String addRespHeaderConfig = this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL");
+		//解析Json格式的规则
+		HashMap<String, String> addRespHeaderRuleMap = UtilsPlus.parseJsonRule2HashMap(addRespHeaderConfig, true);
+		if (addRespHeaderRuleMap == null) return;
+
+		for (String rule:addRespHeaderRuleMap.keySet()) {
+			//获取需要添加的响应头  //这种模式下每种方法只支持添加一个请求头配置
+			String addRespHeaderValue = null;
+
+			//字符串过滤方案 关键字
+			if (curUrl.contains(rule)) {
+				addRespHeaderValue = addRespHeaderRuleMap.get(rule);
 			}
-		}else {
-			for (String ruleLower:addRespHeaderMapLower.keySet()) {
-				//跳过空 rule 的情况
-				if(ruleLower.equals("")) continue;
 
-				//字符串过滤方案 关键字
-				if (ruleLower.contains(curUrlOrMethodLower)) addRespHeaderValue = addRespHeaderMapLower.get(ruleLower);
-
-				//正则过滤方案 匹配 原始 key 匹配原始 URL
-				try {
-					Pattern pattern = Pattern.compile(ruleLower);
-					Matcher matcher = pattern.matcher(curUrlOrMethodLower);
-					if (matcher.find())  addRespHeaderValue = addRespHeaderMapLower.get(ruleLower);
-				} catch (Exception e) {
-					// 处理正则表达式语法错误的情况
-					e.getMessage();
+			//正则过滤方案 匹配 原始 key 匹配原始 URL
+			try {
+				Pattern pattern = Pattern.compile(rule);
+				Matcher matcher = pattern.matcher(curUrl);
+				if (matcher.find()){
+					addRespHeaderValue = addRespHeaderRuleMap.get(rule);
 				}
+			} catch (Exception e) {
+				// 处理正则表达式语法错误的情况
+				e.getMessage();
+			}
+
+			if(addRespHeaderValue !=null){
+				//设置响应头信息
+				msgInfoSetResponse(messageInfo, addRespHeaderValue);
 			}
 		}
-
-		msgInfosetResponse(messageInfo, addRespHeaderValue);
 	}
 
-	/**
-	 * 转换Json字符串到hashMap,支持全小写处理
-	 * @param jsonConfig
-	 * @return
-	 */
-	public static HashMap<String, String> parseJsonRule2HashMap(String jsonConfig, boolean lowerCase) {
-		//转换Json对象
-		HashMap<String, String> addRespHeaderMap;
-		try {
-			addRespHeaderMap = new Gson().fromJson(jsonConfig, HashMap.class);
-		} catch (Exception e) {
-			e.getMessage();
-			stderr.println(String.format("[!] An error occurred while converting Json format rules: %s", e.getMessage()));
-			return null;
-		}
-
-		if (addRespHeaderMap == null || addRespHeaderMap.isEmpty()) return null;
-
-		if (lowerCase){
-			//转换为全小写键值对
-			HashMap<String, String> addRespHeaderMapLower = new HashMap();
-			for (String rule : addRespHeaderMap.keySet()) {
-				addRespHeaderMapLower.put(rule.toLowerCase(), addRespHeaderMap.get(rule));
-			}
-			return addRespHeaderMapLower;
-		}
-
-		return addRespHeaderMap;
-	}
 
 	/**
 	 * @param messageInfo
 	 * @param addRespHeaderValue
 	 */
-	private void msgInfosetResponse(IHttpRequestResponse messageInfo, String addRespHeaderValue) {
+	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderValue) {
 		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
 		//进行实际处理
 		if(addRespHeaderValue != null){

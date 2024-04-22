@@ -1,5 +1,6 @@
 package plus;
 
+import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import burp.IHttpRequestResponse;
 import com.google.gson.Gson;
@@ -239,4 +240,33 @@ public class UtilsPlus {
         return hostHashSet;
     }
 
+    /**
+     * 转换Json字符串到hashMap,支持全小写处理
+     * @param jsonConfig
+     * @return
+     */
+    public static HashMap<String, String> parseJsonRule2HashMap(String jsonConfig, boolean lowerCase) {
+        //转换Json对象
+        HashMap<String, String> ruleHashMap;
+        try {
+            ruleHashMap = new Gson().fromJson(jsonConfig, HashMap.class);
+        } catch (Exception e) {
+            e.getMessage();
+            BurpExtender.stderr.println(String.format("[!] converting Json rules Occur Error : %s", e.getMessage()));
+            return null;
+        }
+
+        if (ruleHashMap == null || ruleHashMap.isEmpty()) return null;
+
+        if (lowerCase){
+            //转换为全小写键值对
+            HashMap<String, String> addRespHeaderMapLower = new HashMap();
+            for (String rule : ruleHashMap.keySet()) {
+                addRespHeaderMapLower.put(rule.toLowerCase(), ruleHashMap.get(rule));
+            }
+            return addRespHeaderMapLower;
+        }
+
+        return ruleHashMap;
+    }
 }
