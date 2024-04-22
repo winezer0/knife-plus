@@ -479,29 +479,14 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			curUrlOrMethodLower = helperPlus.getFullURL(messageInfo).toString().toLowerCase();
 		}
 
-		//转换Json对象
-		HashMap<String, String> addRespHeaderMap;
-		try {
-			addRespHeaderMap = new Gson().fromJson(addRespHeaderConfig, HashMap.class);
-		} catch (Exception e) {
-			e.getMessage();
-			stderr.println(String.format("[!] An error occurred while converting Json format rules: %s", e.getMessage()));
-			return;
-		}
-
-		// 从 MethodAddHeaderHashMap hashmap中进行查找 method 对应的动作
-		if (addRespHeaderMap == null || addRespHeaderMap.isEmpty()) return;
-
-		//转换为全小写键值对
-		HashMap<String, String> addRespHeaderMapLower = new HashMap();
-		for (String rule : addRespHeaderMap.keySet()) {
-			addRespHeaderMapLower.put(rule.toLowerCase(), addRespHeaderMap.get(rule));
-		}
+		//解析Json格式的规则
+		HashMap<String, String> addRespHeaderMapLower = parseJsonRule2HashMap(addRespHeaderConfig, true);
+		if (addRespHeaderMapLower == null) return;
 
 		//判断是否需要处理该请求方法
 		String addRespHeaderValue = null;
 
-		//分别判断处理动作
+		// 从 MethodAddHeaderHashMap hashmap中进行查找 批量规则 和 对应的动作
 		if(BaseRequestMethod){
 			if(addRespHeaderMapLower.containsKey(curUrlOrMethodLower)) {
 				addRespHeaderValue = addRespHeaderMapLower.get(curUrlOrMethodLower);
@@ -526,6 +511,45 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			}
 		}
 
+		msgInfosetResponse(messageInfo, addRespHeaderValue);
+	}
+
+	/**
+	 * 转换Json字符串到hashMap,支持全小写处理
+	 * @param jsonConfig
+	 * @return
+	 */
+	public static HashMap<String, String> parseJsonRule2HashMap(String jsonConfig, boolean lowerCase) {
+		//转换Json对象
+		HashMap<String, String> addRespHeaderMap;
+		try {
+			addRespHeaderMap = new Gson().fromJson(jsonConfig, HashMap.class);
+		} catch (Exception e) {
+			e.getMessage();
+			stderr.println(String.format("[!] An error occurred while converting Json format rules: %s", e.getMessage()));
+			return null;
+		}
+
+		if (addRespHeaderMap == null || addRespHeaderMap.isEmpty()) return null;
+
+		if (lowerCase){
+			//转换为全小写键值对
+			HashMap<String, String> addRespHeaderMapLower = new HashMap();
+			for (String rule : addRespHeaderMap.keySet()) {
+				addRespHeaderMapLower.put(rule.toLowerCase(), addRespHeaderMap.get(rule));
+			}
+			return addRespHeaderMapLower;
+		}
+
+		return addRespHeaderMap;
+	}
+
+	/**
+	 * @param messageInfo
+	 * @param addRespHeaderValue
+	 */
+	private void msgInfosetResponse(IHttpRequestResponse messageInfo, String addRespHeaderValue) {
+		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
 		//进行实际处理
 		if(addRespHeaderValue != null){
 			String respHeaderName = "Content-Type";
