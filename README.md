@@ -41,7 +41,7 @@ https://github.com/bit4woo/knife
 
 优化 dismiss功能，支持前缀|关键字|正则表达式
 支持 OPTIONS 等方法过滤（通过添加请求头）
-提示 高级的 AddRespHeader XXXIII 功能，可以基于 请求方法和请求URL来对响应头进行修改，最终实现过滤 OPTIONS等功能
+提示 高级的 AddRespHeader XXXIII 功能，可以基于 请求方法|请求URL|响应头行来对响应头进行修改，最终实现过滤 OPTIONS等功能
 
 ```
 
