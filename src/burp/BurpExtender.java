@@ -444,9 +444,11 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			}else {//response
 				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
 				if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
-					CustomAddRespHeader(messageInfo,false);
-				} else if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
-					CustomAddRespHeader(messageInfo,true);
+					CustomAddRespHeaderByHttpInfo(messageInfo,false);
+				}
+
+				if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
+					CustomAddRespHeaderByHttpInfo(messageInfo,true);
 				}
 			}
 		} catch (Exception e) {
@@ -460,7 +462,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 	 * @param messageInfo
 	 * @param BaseRequestMethod
 	 */
-	private void CustomAddRespHeader(IHttpRequestResponse messageInfo, boolean BaseRequestMethod) {
+	private void CustomAddRespHeaderByHttpInfo(IHttpRequestResponse messageInfo, boolean BaseRequestMethod) {
 		String curUrlOrMethodLower;
 		String addRespHeaderConfig;
 		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
@@ -482,6 +484,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 			addRespHeaderMap = new Gson().fromJson(addRespHeaderConfig, HashMap.class);
 		} catch (Exception e) {
 			e.getMessage();
+			stderr.println(String.format("[!] An error occurred while converting Json format rules: %s", e.getMessage()));
 			return;
 		}
 
