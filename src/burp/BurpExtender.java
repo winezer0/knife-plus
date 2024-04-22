@@ -8,9 +8,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import com.google.gson.Gson;
 
@@ -38,11 +36,11 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 	public IContextMenuInvocation invocation;
 	public int proxyServerIndex=-1;
 
-	public static String ExtensionName = "Knife";
+	public static String ExtensionName = "knife";
 	public static String Version = bsh.This.class.getPackage().getImplementationVersion();
-	public static String Author = "by bit4woo";
 	public static String github = "https://github.com/bit4woo/knife";
-	
+
+	public static String knifeConfig = String.format("knife.%s.config", Version);
 	public static String CurrentProxy = "";
 
 	@Override
@@ -53,32 +51,38 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		BurpExtender.stdout.println(getFullExtensionName());
 		BurpExtender.stdout.println(github);
 
-		table = new ConfigTable(new ConfigTableModel());
-		configPanel.setViewportView(table);
-
-		String content = callbacks.loadExtensionSetting(String.format("knifeConfig.%s", Version));
-		if (content!=null) {
-			config = new Gson().fromJson(content, Config.class);
-			showToUI(config);
-		}else {
-			showToUI(new Gson().fromJson(initConfig(), Config.class));
-		}
-		table.setupTypeColumn();//call this function must after table data loaded !!!!
-
-
-		ChineseTabFactory chntabFactory = new ChineseTabFactory(null, false, helpers, callbacks);
-
-		//各项数据初始化完成后在进行这些注册操作，避免插件加载时的空指针异常
 		callbacks.setExtensionName(getFullExtensionName());
-		callbacks.registerContextMenuFactory(this);// for menus
-		callbacks.registerMessageEditorTabFactory(chntabFactory);// for Chinese
-		callbacks.addSuiteTab(BurpExtender.this);
-		callbacks.registerHttpListener(this);
-		callbacks.registerProxyListener(this);
-		callbacks.registerExtensionStateListener(this);
 
-		//自动加载用户指定的 Project Json文件,如果不存在会自动保存当前配置
-		AdvScopeUtils.autoLoadProjectConfig(callbacks,true);
+		// [重要] 使用 SwingUtilities.invokeLater 解决操作过快 导致出现swing崩溃的问题
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				table = new ConfigTable(new ConfigTableModel());
+				configPanel.setViewportView(table);
+				String content = callbacks.loadExtensionSetting(knifeConfig);
+				if (content!=null) {
+					config = new Gson().fromJson(content, Config.class);
+					showToUI(config);
+				}else {
+					showToUI(new Gson().fromJson(initConfig(), Config.class));
+				}
+				table.setupTypeColumn();//call this function must after table data loaded !!!!
+				ChineseTabFactory chineseTabFactory = new ChineseTabFactory(null, false, helpers, callbacks);
+
+				//各项数据初始化完成后在进行这些注册操作，避免插件加载时的空指针异常
+				callbacks.addSuiteTab(BurpExtender.this);
+				callbacks.registerContextMenuFactory(BurpExtender.this);// for menus
+				callbacks.registerMessageEditorTabFactory(chineseTabFactory);// for Chinese
+				callbacks.registerHttpListener(BurpExtender.this);
+				callbacks.registerProxyListener(BurpExtender.this);
+				callbacks.registerExtensionStateListener(BurpExtender.this);
+
+				//自动加载用户指定的 Project Json文件,如果不存在会自动保存当前配置
+				AdvScopeUtils.autoLoadProjectConfig(callbacks,true);
+
+				BurpExtender.stdout.println("Load Extension Success ...");
+			}
+		});
+
 	}
 
 
@@ -104,7 +108,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 	//name+version+author
 	public static String getFullExtensionName(){
-		return ExtensionName+" "+Version;
+		return ExtensionName + "." + Version;
 	}
 
 	//JMenu 是可以有下级菜单的，而JMenuItem是不能有下级菜单的
@@ -182,7 +186,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 	@Override
 	public String getTabCaption() {
-		return ("Knife");
+		return getFullExtensionName();
 	}
 
 
@@ -193,7 +197,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 	@Override
 	public void extensionUnloaded() {
-		callbacks.saveExtensionSetting("knifeconfig", getAllConfig());
+		callbacks.saveExtensionSetting(knifeConfig, getAllConfig());
 	}
 
 	@Override

@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
+import static burp.BurpExtender.knifeConfig;
 
 public class GUI extends JFrame {
 
@@ -431,7 +432,7 @@ public class GUI extends JFrame {
 	}
 	
 	public void saveConfigToBurp() {
-		BurpExtender.callbacks.saveExtensionSetting("knifeconfig", getAllConfig());
+		BurpExtender.callbacks.saveExtensionSetting(knifeConfig, getAllConfig());
 	}
 
 	public int checkEnabledFor(){
