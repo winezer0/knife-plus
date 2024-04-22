@@ -14,7 +14,7 @@ public class Config {
 	private String ConfigName = "";
 	private List<String> stringConfigEntries = new ArrayList<String>();// get from configTableModel
 	private int enableStatus = IBurpExtenderCallbacks.TOOL_PROXY;
-	private boolean onlyForScope = true;
+	private boolean onlyForScope = false;
 	private transient HashMap<String,HeaderEntry> setCookieMap = new HashMap<String,HeaderEntry>();
 	private transient HeaderEntry usedCookie = null;
     

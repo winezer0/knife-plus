@@ -56,7 +56,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		table = new ConfigTable(new ConfigTableModel());
 		configPanel.setViewportView(table);
 
-		String content = callbacks.loadExtensionSetting("knifeconfig");
+		String content = callbacks.loadExtensionSetting(String.format("knifeConfig.%s", Version));
 		if (content!=null) {
 			config = new Gson().fromJson(content, Config.class);
 			showToUI(config);
@@ -104,7 +104,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 	//name+version+author
 	public static String getFullExtensionName(){
-		return ExtensionName+" "+Version+" "+Author;
+		return ExtensionName+" "+Version;
 	}
 
 	//JMenu 是可以有下级菜单的，而JMenuItem是不能有下级菜单的
@@ -313,7 +313,6 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		try {
 			if (messageIsRequest) {
 				Getter getter = new Getter(helpers);
-
 				URL url = getter.getFullURL(messageInfo);
 				String host = getter.getHost(messageInfo);
 				LinkedHashMap<String, String> headers = getter.getHeaderMap(messageIsRequest,messageInfo);
@@ -363,12 +362,10 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 							if (entry.getType().equals(ConfigEntry.Action_Add_Or_Replace_Header) && entry.isEnable()) {
 								// 增加或替换请求头 行
-								// System.out.println(String.format("Adds or replaces request header line: %s -> %s", key, value));
 								headers.put(key, value);
 								isRequestChanged = true;
 							} else if (entry.getType().equals(ConfigEntry.Action_Append_To_header_value) && entry.isEnable()) {
 								// 增加或替换请求头的值
-								// System.out.println(String.format("Adds or replaces request header value: %s -> %s", key, value));
 								String oldValue = headers.get(key);
 								if (oldValue == null) {
 									oldValue = "";
@@ -443,21 +440,26 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 					}
 				}*/
 			} else {//response
-				//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
-				if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
-					AddRespHeaderByReqMethod(messageInfo);
-				}
+				Getter getter = new Getter(helpers);
+				URL url = getter.getFullURL(messageInfo);
+				if (toolFlag == (toolFlag & checkEnabledFor())) {
+					if (!config.isOnlyForScope()||callbacks.isInScope(url)){
+						//给 Options 方法的响应 添加 Content-Type: application/octet-stream 用于过滤
+						if(this.tableModel.getConfigValueByKey("AddRespHeaderByReqMethod")!= null){
+							AddRespHeaderByReqMethod(messageInfo);
+						}
 
-				//给没有后缀的图片URL添加响应头,便于过滤筛选
-				if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
-					AddRespHeaderByReqUrl(messageInfo);
-				}
+						//给没有后缀的图片URL添加响应头,便于过滤筛选
+						if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
+							AddRespHeaderByReqUrl(messageInfo);
+						}
 
-				//给Json格式的请求的响应添加响应头,防止被Js过滤
-				if (this.tableModel.getConfigValueByKey("AddRespHeaderByRespHeader")!= null){
-					AddRespHeaderByRespHeader(messageInfo);
+						//给Json格式的请求的响应添加响应头,防止被Js过滤
+						if (this.tableModel.getConfigValueByKey("AddRespHeaderByRespHeader")!= null){
+							AddRespHeaderByRespHeader(messageInfo);
+						}
+					}
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -465,6 +467,74 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		}
 	}
 
+	public static void confirmProxy() {
+		String proxy = JOptionPane.showInputDialog("Confirm Proxy Of Burp", "127.0.0.1:8080");
+		if (proxy != null) {
+			BurpExtender.CurrentProxy = proxy.trim();
+		}
+	}
+	
+	public static String getProxyHost() {
+		try {
+			if (CurrentProxy == null ||CurrentProxy.equals("") || CurrentProxy.split(":").length!=2) {
+				confirmProxy();
+			}
+			String proxyHost = CurrentProxy.split(":")[0];
+			return proxyHost;
+		} catch (Exception e) {
+			e.printStackTrace();
+			CurrentProxy="";//设置为空，以便重新获取。
+			return null;
+		}
+	}
+	
+	public static int getProxyPort() {
+		try {
+			if (CurrentProxy == null ||CurrentProxy.equals("") || CurrentProxy.split(":").length!=2) {
+				confirmProxy();
+			}
+			String proxyPort = CurrentProxy.split(":")[1];
+			return Integer.parseInt(proxyPort);
+		} catch (Exception e) {
+			e.printStackTrace();
+			CurrentProxy="";//设置为空，以便重新获取。
+			return -1;
+		}
+	}
+
+	public List<String> GetSetCookieHeaders(String cookies){
+		if (cookies.startsWith("Cookie: ")){
+			cookies = cookies.replaceFirst("Cookie: ","");
+		}
+
+		String[] cookieList = cookies.split("; ");
+		List<String> setHeaderList= new ArrayList<String>();
+		//Set-Cookie: SST_S22__WEB_RIGHTS=SST_S22_JT_RIGHTS_113_9; Path=/
+		for (String cookie: cookieList){
+			setHeaderList.add(String.format("Set-Cookie: %s; Path=/",cookie));
+		}
+		return setHeaderList;
+	}
+
+	public static IBurpExtenderCallbacks getCallbacks() {
+		return callbacks;
+	}
+
+	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderLine) {
+		//进行实际处理
+		if(addRespHeaderLine != null){
+			HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
+			String respHeaderName = "Content-Type";
+			String respHeaderValue = "application/octet-stream";
+			if (addRespHeaderLine.contains(":")) {
+				respHeaderName = addRespHeaderLine.split(":", 2)[0].trim();
+				respHeaderValue = addRespHeaderLine.split(":", 2)[1].trim();
+			}
+			byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(), respHeaderName, respHeaderValue);
+			messageInfo.setResponse(resp);
+			messageInfo.setComment("Resp Add Header By Knife"); //在logger中没有显示comment
+		}
+	}
 
 	private void AddRespHeaderByReqMethod(IHttpRequestResponse messageInfo){
 		HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
@@ -523,76 +593,5 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 				}
 			}
 		}
-	}
-
-
-	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderLine) {
-		//进行实际处理
-		if(addRespHeaderLine != null){
-			HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
-			// System.out.println(String.format("message Info Set Response add Resp Header Line: %s", addRespHeaderLine));
-			String respHeaderName = "Content-Type";
-			String respHeaderValue = "application/octet-stream";
-			if (addRespHeaderLine.contains(":")) {
-				respHeaderName = addRespHeaderLine.split(":", 2)[0].trim();
-				respHeaderValue = addRespHeaderLine.split(":", 2)[1].trim();
-			}
-			byte[] resp = helperPlus.addOrUpdateHeader(false, messageInfo.getResponse(), respHeaderName, respHeaderValue);
-			messageInfo.setResponse(resp);
-			messageInfo.setComment("Resp Add Header By Knife"); //在logger中没有显示comment
-		}
-	}
-
-	public static void confirmProxy() {
-		String proxy = JOptionPane.showInputDialog("Confirm Proxy Of Burp", "127.0.0.1:8080");
-		if (proxy != null) {
-			BurpExtender.CurrentProxy = proxy.trim();
-		}
-	}
-	
-	public static String getProxyHost() {
-		try {
-			if (CurrentProxy == null ||CurrentProxy.equals("") || CurrentProxy.split(":").length!=2) {
-				confirmProxy();
-			}
-			String proxyHost = CurrentProxy.split(":")[0];
-			return proxyHost;
-		} catch (Exception e) {
-			e.printStackTrace();
-			CurrentProxy="";//设置为空，以便重新获取。
-			return null;
-		}
-	}
-	
-	public static int getProxyPort() {
-		try {
-			if (CurrentProxy == null ||CurrentProxy.equals("") || CurrentProxy.split(":").length!=2) {
-				confirmProxy();
-			}
-			String proxyPort = CurrentProxy.split(":")[1];
-			return Integer.parseInt(proxyPort);
-		} catch (Exception e) {
-			e.printStackTrace();
-			CurrentProxy="";//设置为空，以便重新获取。
-			return -1;
-		}
-	}
-
-	public List<String> GetSetCookieHeaders(String cookies){
-		if (cookies.startsWith("Cookie: ")){
-			cookies = cookies.replaceFirst("Cookie: ","");
-		}
-
-		String[] cookieList = cookies.split("; ");
-		List<String> setHeaderList= new ArrayList<String>();
-		//Set-Cookie: SST_S22__WEB_RIGHTS=SST_S22_JT_RIGHTS_113_9; Path=/
-		for (String cookie: cookieList){
-			setHeaderList.add(String.format("Set-Cookie: %s; Path=/",cookie));
-		}
-		return setHeaderList;
-	}
-
-	public static IBurpExtenderCallbacks getCallbacks() {
-		return callbacks;
 	}
 }

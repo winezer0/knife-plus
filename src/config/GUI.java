@@ -62,7 +62,6 @@ public class GUI extends JFrame {
 	private JButton RemoveButton;
 	private JButton AddButton;
 	private JSplitPane TargetSplitPane;
-	public JLabel lblNewLabel_1;
 	public JCheckBox chckbx_proxy;
 	public JCheckBox chckbx_repeater;
 	public JCheckBox chckbx_intruder;
