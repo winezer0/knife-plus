@@ -458,7 +458,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 	}
 
 	/**
-	 * 基于请求 配置 添加相应头
+	 * 基于请求 配置 添加响应头
 	 * @param messageInfo
 	 * @param BaseRequestMethod
 	 */
