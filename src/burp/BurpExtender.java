@@ -335,32 +335,39 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 					//if ((config.isOnlyForScope() && callbacks.isInScope(url))|| !config.isOnlyForScope()) {
 					if (!config.isOnlyForScope()||callbacks.isInScope(url)){
 
+						//请求时，自动进行内容替换
 						List<ConfigEntry> updateOrAddEntries = tableModel.getConfigEntries();
 						for (ConfigEntry entry : updateOrAddEntries) {
 							String key = entry.getKey();
 							String value = entry.getValue();
 
+							//将 config面板中 value列 的 %host变量替换为 当前主机host
 							if (value.contains("%host")) {
 								value = value.replaceAll("%host", host);
 								//stdout.println("3333"+value);
 							}
 
+							//将 config面板中 value列 的 %dnslogserver变量替换为 用户自己设置的 DNSlogServer 属性的值
 							if (value.toLowerCase().contains("%dnslogserver")) {
 								String dnslog = tableModel.getConfigValueByKey("DNSlogServer");
-								Pattern p = Pattern.compile("(?u)%dnslogserver");
-								Matcher m = p.matcher(value);
+								// DNSlogServer 没有配置 获得 null 时, 会导致报错
+								if (dnslog != null){
+									Pattern p = Pattern.compile("(?u)%dnslogserver");
+									Matcher m = p.matcher(value);
 
-								while (m.find()) {
-									String found = m.group(0);
-									value = value.replaceAll(found, dnslog);
+									while (m.find()) {
+										String found = m.group(0);
+										value = value.replaceAll(found, dnslog);
+									}
 								}
 							}
 
 							if (entry.getType().equals(ConfigEntry.Action_Add_Or_Replace_Header) && entry.isEnable()) {
+								// 增加或替换请求头 行
 								headers.put(key, value);
 								isRequestChanged = true;
-
 							} else if (entry.getType().equals(ConfigEntry.Action_Append_To_header_value) && entry.isEnable()) {
+								// 增加或替换请求头的值
 								String oldValue = headers.get(key);
 								if (oldValue == null) {
 									oldValue = "";
@@ -370,6 +377,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 								isRequestChanged = true;
 								//stdout.println("2222"+value);
 							} else if (entry.getKey().equalsIgnoreCase("Chunked-AutoEnable") && entry.isEnable()) {
+								// 开启 自动分块
 								headers.put("Transfer-Encoding", " chunked");
 								isRequestChanged = true;
 
@@ -391,7 +399,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 						}
 
 
-						///proxy function should be here
+						/// proxy function should be here 请求时，自动进行上游代理配置
 						//reference https://support.portswigger.net/customer/portal/questions/17350102-burp-upstream-proxy-settings-and-sethttpservice
 						String proxy = this.tableModel.getConfigValueByKey("Proxy-ServerList");
 						String mode = this.tableModel.getConfigValueByKey("Proxy-UseRandomMode");
