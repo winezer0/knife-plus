@@ -447,6 +447,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 					CustomAddRespHeaderByHttpInfo(messageInfo,false);
 				}
 
+				//给没有后缀的图片URL添加响应头,便于过滤筛选
 				if (this.tableModel.getConfigValueByKey("AddRespHeaderByReqURL")!= null){
 					CustomAddRespHeaderByHttpInfo(messageInfo,true);
 				}
