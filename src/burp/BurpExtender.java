@@ -354,7 +354,6 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 								if (dnslog != null){
 									Pattern p = Pattern.compile("(?u)%dnslogserver");
 									Matcher m = p.matcher(value);
-
 									while (m.find()) {
 										String found = m.group(0);
 										value = value.replaceAll(found, dnslog);
@@ -364,10 +363,12 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 
 							if (entry.getType().equals(ConfigEntry.Action_Add_Or_Replace_Header) && entry.isEnable()) {
 								// 增加或替换请求头 行
+								// System.out.println(String.format("Adds or replaces request header line: %s -> %s", key, value));
 								headers.put(key, value);
 								isRequestChanged = true;
 							} else if (entry.getType().equals(ConfigEntry.Action_Append_To_header_value) && entry.isEnable()) {
 								// 增加或替换请求头的值
+								// System.out.println(String.format("Adds or replaces request header value: %s -> %s", key, value));
 								String oldValue = headers.get(key);
 								if (oldValue == null) {
 									oldValue = "";
@@ -497,7 +498,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		//循环 获取需要添加的响应头 并 设置响应头信息
 		for (String rule:addRespHeaderRuleMap.keySet()) {
 			//获取需要添加的响应头 每个URL支持多种动作规则
-			String addRespHeaderLine = getActionFromRuleMap(addRespHeaderRuleMap, rule, curUrl);
+			String addRespHeaderLine = UtilsPlus.getActionFromRuleMap(addRespHeaderRuleMap, rule, curUrl);
 			msgInfoSetResponse(messageInfo, addRespHeaderLine);
 		}
 	}
@@ -515,7 +516,7 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 		for (String rule:addRespHeaderRuleMap.keySet()) {
 			for (String responseHeader:responseHeaders){
 				//获取需要添加的响应头 每个规则只处理一种响应头，支持多种动作规则
-				String addRespHeaderLine = getActionFromRuleMap(addRespHeaderRuleMap, rule, responseHeader);
+				String addRespHeaderLine = UtilsPlus.getActionFromRuleMap(addRespHeaderRuleMap, rule, responseHeader);
 				if(addRespHeaderLine!=null){
 					msgInfoSetResponse(messageInfo, addRespHeaderLine);
 					break; 	//匹配成功后就进行下一条规则的匹配
@@ -525,39 +526,11 @@ public class BurpExtender extends GUI implements IBurpExtender, IContextMenuFact
 	}
 
 
-	/**
-	 * 从 规则动作 Map 中 取出符合当前 规则 的 动作
-	 * @param ruleMap
-	 * @param string
-	 * @param rule
-	 * @return
-	 */
-	private String getActionFromRuleMap(HashMap<String, String> ruleMap, String rule, String string) {
-		String addRespHeaderValue = null;
-
-		//字符串过滤方案 关键字
-		if (string.contains(rule)) {
-			addRespHeaderValue = ruleMap.get(rule);
-			return addRespHeaderValue;
-		}
-
-		//正则过滤方案 匹配 原始 key 匹配原始 URL
-		try {
-			Pattern pattern = Pattern.compile(rule, Pattern.CASE_INSENSITIVE);
-			Matcher matcher = pattern.matcher(string);
-			if (matcher.find()) addRespHeaderValue = ruleMap.get(rule);
-		} catch (Exception e) {
-			// 处理正则表达式语法错误的情况
-			e.getMessage();
-		}
-		return addRespHeaderValue;
-	}
-
 	private void msgInfoSetResponse(IHttpRequestResponse messageInfo, String addRespHeaderLine) {
 		//进行实际处理
 		if(addRespHeaderLine != null){
 			HelperPlus helperPlus = new HelperPlus(callbacks.getHelpers());
-			stdout.println(String.format("message Info Set Response add Resp Header Line: %s", addRespHeaderLine));
+			// System.out.println(String.format("message Info Set Response add Resp Header Line: %s", addRespHeaderLine));
 			String respHeaderName = "Content-Type";
 			String respHeaderValue = "application/octet-stream";
 			if (addRespHeaderLine.contains(":")) {

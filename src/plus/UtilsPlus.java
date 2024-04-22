@@ -11,6 +11,8 @@ import com.google.gson.JsonParser;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UtilsPlus {
     /**
@@ -251,8 +253,8 @@ public class UtilsPlus {
         try {
             ruleHashMap = new Gson().fromJson(jsonConfig, HashMap.class);
         } catch (Exception e) {
-            e.getMessage();
             BurpExtender.stderr.println(String.format("[!] converting Json rules Occur Error : %s", e.getMessage()));
+            System.out.println(e.getMessage());
             return null;
         }
 
@@ -268,5 +270,34 @@ public class UtilsPlus {
         }
 
         return ruleHashMap;
+    }
+
+    /**
+     * 从 规则动作 Map 中 取出符合当前 规则 的 动作
+     * @param ruleMap
+     * @param string
+     * @param rule
+     * @return
+     */
+    public static  String getActionFromRuleMap(HashMap<String, String> ruleMap, String rule, String string) {
+        String addRespHeaderValue = null;
+
+        //字符串过滤方案 关键字
+        if (string.contains(rule)) {
+            addRespHeaderValue = ruleMap.get(rule);
+            return addRespHeaderValue;
+        }
+
+        //正则过滤方案 匹配 原始 key 匹配原始 URL
+        try {
+            Pattern pattern = Pattern.compile(rule, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(string);
+            if (matcher.find()) addRespHeaderValue = ruleMap.get(rule);
+        } catch (Exception e) {
+            // 处理正则表达式语法错误的情况
+            BurpExtender.stderr.println(String.format("[!] Pattern Compile Rule Occur Error : %s", e.getMessage()));
+            System.out.println(e.getMessage());
+        }
+        return addRespHeaderValue;
     }
 }
