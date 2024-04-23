@@ -344,7 +344,7 @@ public class ChineseTab implements IMessageEditorTab{
 				return true;
 			}
 		}catch(Exception e) {
-			System.out.println(String.format("format json error %s", e.getMessage()));
+			//System.out.println(String.format("format json error %s", e.getMessage()));
 			return false;
 		}
 		return false;
@@ -382,7 +382,7 @@ public class ChineseTab implements IMessageEditorTab{
 			byte[] newBody = beautyJSON.getBytes(ContentCharSet);
 			Content = helpers.buildHttpMessage(headers,newBody);
 		}catch(Exception e) {
-			System.out.println(String.format("format json error %s", e.getMessage()));
+			//System.out.println(String.format("format json error %s", e.getMessage()));
 		}
 		return Content;
 	}
