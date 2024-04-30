@@ -15,7 +15,7 @@ https://github.com/bit4woo/knife
 
 项目作者：bit4woo
 
-本分支主要是对齐进行功能改进,所有改进已通过Fork项目进行PR.
+本分支主要进行功能改进
 ```
 
 
