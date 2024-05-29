@@ -1,5 +1,7 @@
 # knife | Burp多功能辅助插件
 
+本项目是基于2.1版本的增强分支,目前新版结构差距较大,已重新发布更新分支，本项目保持bug修复,建议优先使用2.3分支.
+
 ## 0x00 原始的项目路径 
 
 https://github.com/bit4woo/knife   首先感恩大佬开源!!!
@@ -7,6 +9,7 @@ https://github.com/bit4woo/knife   首先感恩大佬开源!!!
 ## 基于2.3版本的增强分支 
 
 https://github.com/winezer0/knife-branch
+
 
 ## 0x01 项目简介
 
